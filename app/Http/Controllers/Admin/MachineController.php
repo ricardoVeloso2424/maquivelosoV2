@@ -8,6 +8,7 @@ use App\Models\Machine;
 use App\Models\MachineImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class MachineController extends Controller
 {
@@ -28,8 +29,8 @@ class MachineController extends Controller
                         ->orWhere('model', 'like', "%{$q}%");
                 });
             })
-            ->when($category !== '', fn ($query) => $query->where('category_id', $category))
-            ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->when($category !== '', fn($query) => $query->where('category_id', $category))
+            ->when($status !== '', fn($query) => $query->where('status', $status))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -62,7 +63,7 @@ class MachineController extends Controller
             'featured' => ['nullable', 'boolean'],
 
             'images' => ['nullable', 'array'],
-            'images.*' => ['file', 'image', 'max:6144'],
+            'images.*' => ['file', 'image', 'max:16144'],
         ]);
 
         $data['featured'] = $request->boolean('featured');
@@ -170,5 +171,18 @@ class MachineController extends Controller
         if ($path !== '' && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
+    }
+
+    public function updateStatus(Request $request, Machine $machine)
+    {
+        $data = $request->validate([
+            'status' => ['required', Rule::in(self::STATUS)],
+        ]);
+
+        $machine->update([
+            'status' => $data['status'],
+        ]);
+
+        return response()->json(['ok' => true]);
     }
 }

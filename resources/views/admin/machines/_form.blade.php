@@ -5,15 +5,16 @@
         if (!$machine) return old($key, $fallback);
 
         $map = [
-            'name' => ['name', 'nome'],
+            'name'        => ['name', 'nome'],
             'description' => ['description', 'descricao'],
             'category_id' => ['category_id', 'categoria_id'],
-            'price' => ['price', 'preco'],
-            'status' => ['status', 'estado'],
-            'featured' => ['featured', 'destaque', 'is_featured'],
+            'price'       => ['price', 'preco'],
+            'status'      => ['status', 'estado'],
+            'featured'    => ['featured', 'destaque', 'is_featured'],
         ];
 
         $candidates = $map[$key] ?? [$key];
+
         foreach ($candidates as $cand) {
             if (isset($machine->{$cand}) && $machine->{$cand} !== null) {
                 return old($key, $machine->{$cand});
@@ -66,9 +67,9 @@
     </div>
 @endif
 
-{{-- Imagens existentes (FORA do form principal para não haver forms aninhados) --}}
+{{-- Imagens existentes (FORA do form principal) --}}
 @if($isEdit && $existingImages->count())
-    <div>
+    <div class="mt-6">
         <div class="text-sm font-semibold text-gray-900">Imagens atuais</div>
 
         <div class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-3">
@@ -80,10 +81,10 @@
                         <img src="{{ $u }}" alt="" class="h-full w-full object-cover">
                     @endif
 
-                    @if(isset($img->id))
+                    @if(isset($img->id) && isset($machine->id))
                         <form
                             method="POST"
-                            action="{{ route('admin.machines.images.destroy', [$machine, $img]) }}"
+                            action="{{ route('admin.machines.images.destroy', ['machine' => $machine->id, 'image' => $img->id]) }}"
                             onsubmit="return confirm('Remover esta imagem?');"
                             class="absolute top-1 right-1"
                         >
@@ -108,10 +109,11 @@
 @endif
 
 <form
+    id="machineForm"
     method="POST"
     action="{{ $isEdit ? route('admin.machines.update', $machine) : route('admin.machines.store') }}"
     enctype="multipart/form-data"
-    class="space-y-8"
+    class="space-y-8 mt-6"
 >
     @csrf
     @if($isEdit)
@@ -136,9 +138,9 @@
             </label>
 
             <div class="text-xs text-gray-500 leading-relaxed pt-1">
-                Podes selecionar várias imagens (Ctrl/Shift no seletor).
+                Podes selecionar várias imagens (Ctrl).
                 <br>
-                Máx: 6MB por imagem.
+                Máx: 15MB por imagem.
             </div>
         </div>
     </div>
@@ -243,6 +245,7 @@
         </a>
 
         <button
+            id="submitBtn"
             type="submit"
             class="inline-flex w-full items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
         >
@@ -253,29 +256,40 @@
 
 <script>
 (function () {
+    // Preview de novas imagens
     const input = document.getElementById('imagesInput');
     const preview = document.getElementById('new-images-preview');
-    if (!input || !preview) return;
+    if (input && preview) {
+        input.addEventListener('change', function () {
+            preview.innerHTML = '';
+            const files = Array.from(input.files || []);
+            files.forEach((file) => {
+                if (!file.type || !file.type.startsWith('image/')) return;
 
-    input.addEventListener('change', function () {
-        preview.innerHTML = '';
-        const files = Array.from(input.files || []);
-        files.forEach((file) => {
-            if (!file.type || !file.type.startsWith('image/')) return;
+                const url = URL.createObjectURL(file);
 
-            const url = URL.createObjectURL(file);
+                const wrap = document.createElement('div');
+                wrap.className = 'h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100';
 
-            const wrap = document.createElement('div');
-            wrap.className = 'h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100';
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'h-full w-full object-cover';
+                img.onload = () => URL.revokeObjectURL(url);
 
-            const img = document.createElement('img');
-            img.src = url;
-            img.className = 'h-full w-full object-cover';
-            img.onload = () => URL.revokeObjectURL(url);
-
-            wrap.appendChild(img);
-            preview.appendChild(wrap);
+                wrap.appendChild(img);
+                preview.appendChild(wrap);
+            });
         });
-    });
+    }
+
+    // Anti duplo clique no submit
+    const form = document.getElementById('machineForm');
+    const btn = document.getElementById('submitBtn');
+    if (form && btn) {
+        form.addEventListener('submit', function () {
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+        });
+    }
 })();
 </script>

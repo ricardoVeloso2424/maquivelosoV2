@@ -1,3 +1,4 @@
+{{-- resources/views/admin/machines/index.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Máquinas')
@@ -6,9 +7,9 @@
 @php
     use Illuminate\Support\Facades\Storage;
 
-    $q = request('q', '');
+    $q        = request('q', '');
     $category = request('category', '');
-    $status = request('status', '');
+    $status   = request('status', '');
 
     $statusLabels = [
         'available' => 'Disponível',
@@ -40,9 +41,11 @@
     </a>
 </div>
 
+{{-- Filtros --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
     <form method="GET" action="{{ route('admin.machines.index') }}">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {{-- Pesquisa --}}
             <div class="lg:col-span-8">
                 <div class="relative">
                     <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -61,15 +64,16 @@
                 </div>
             </div>
 
+            {{-- Categoria --}}
             <div class="lg:col-span-2">
                 <select
                     name="category"
                     class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
                 >
-                    <option value="">Todas</option>
+                    <option value="">Categorias</option>
                     @foreach(($categories ?? []) as $cat)
                         @php
-                            $catId = is_object($cat) ? ($cat->id ?? null) : null;
+                            $catId   = is_object($cat) ? ($cat->id ?? null) : null;
                             $catName = is_object($cat) ? ($cat->name ?? $cat->nome ?? '') : (string)$cat;
                         @endphp
                         @if($catId !== null)
@@ -79,12 +83,13 @@
                 </select>
             </div>
 
+            {{-- Estado --}}
             <div class="lg:col-span-2">
                 <select
                     name="status"
                     class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
                 >
-                    <option value="">Todos</option>
+                    <option value="">Estado</option>
                     @foreach($statusLabels as $key => $label)
                         <option value="{{ $key }}" @selected($status === $key)>{{ $label }}</option>
                     @endforeach
@@ -114,6 +119,7 @@
     </form>
 </div>
 
+{{-- Tabela --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -139,28 +145,28 @@
                         $imgUrl = null;
                         if ($img) {
                             $path = $img->path ?? $img->url ?? $img->image_path ?? null;
-
                             if ($path) {
                                 if (str_starts_with($path, 'http')) {
                                     $imgUrl = $path;
                                 } else {
                                     $path = ltrim($path, '/');
-                                    if (str_starts_with($path, 'public/')) {
-                                        $path = substr($path, 7);
-                                    }
+                                    if (str_starts_with($path, 'public/')) $path = substr($path, 7);
                                     $imgUrl = Storage::url($path);
                                 }
                             }
                         }
 
-                        $mName = $machine->name ?? $machine->nome ?? '—';
+                        $mName     = $machine->name ?? $machine->nome ?? '—';
                         $mCategory = $machine->category->name ?? $machine->category->nome ?? '—';
-                        $mPrice = $machine->price ?? $machine->preco ?? null;
-                        $mStatus = $machine->status ?? $machine->estado ?? null;
+                        $mPrice    = $machine->price ?? $machine->preco ?? null;
+                        $mStatus   = $machine->status ?? $machine->estado ?? null;
                         $createdAt = $machine->created_at ?? null;
+
+                        $updateStatusUrl = route('admin.machines.updateStatus', $machine);
                     @endphp
 
                     <tr class="hover:bg-gray-50/60">
+                        {{-- Foto --}}
                         <td class="px-6 py-4">
                             <div class="h-14 w-14 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-200">
                                 @if($imgUrl)
@@ -177,14 +183,17 @@
                             </div>
                         </td>
 
+                        {{-- Nome --}}
                         <td class="px-6 py-4">
                             <div class="font-semibold text-gray-900">{{ $mName }}</div>
                         </td>
 
+                        {{-- Categoria --}}
                         <td class="px-6 py-4 text-gray-800">
                             {{ $mCategory }}
                         </td>
 
+                        {{-- Preço --}}
                         <td class="px-6 py-4 text-gray-800">
                             @if($mPrice === null || $mPrice === '')
                                 -
@@ -193,12 +202,17 @@
                             @endif
                         </td>
 
+                        {{-- Estado (badge) --}}
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}">
+                            <span
+                                class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}"
+                                data-status-badge
+                            >
                                 {{ $statusLabels[$mStatus] ?? ucfirst((string)$mStatus) }}
                             </span>
                         </td>
 
+                        {{-- Data --}}
                         <td class="px-6 py-4 text-gray-500">
                             @if($createdAt)
                                 {{ \Carbon\Carbon::parse($createdAt)->format('d/m/Y') }}
@@ -207,8 +221,10 @@
                             @endif
                         </td>
 
+                        {{-- Ações: lápis + botão-ícone que abre o select --}}
                         <td class="px-6 py-4">
-                            <div class="flex items-center justify-end gap-3">
+                            <div class="flex items-center justify-end gap-2">
+                                {{-- Editar --}}
                                 <a href="{{ route('admin.machines.edit', $machine) }}"
                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -217,10 +233,39 @@
                                     </svg>
                                 </a>
 
-                                <a href="{{ route('admin.machines.edit', $machine) }}"
-                                   class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 hover:bg-gray-50">
-                                    Estado
-                                </a>
+                                {{-- Trigger (ícone) + select invisível por cima para abrir opções --}}
+                                <div class="relative inline-flex">
+                                    <button
+                                        type="button"
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                                        title="Alterar estado"
+                                    >
+                                        {{-- sliders icon --}}
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 21v-7"></path>
+                                            <path d="M4 10V3"></path>
+                                            <path d="M12 21v-9"></path>
+                                            <path d="M12 8V3"></path>
+                                            <path d="M20 21v-5"></path>
+                                            <path d="M20 12V3"></path>
+                                            <path d="M2 14h4"></path>
+                                            <path d="M10 8h4"></path>
+                                            <path d="M18 16h4"></path>
+                                        </svg>
+                                    </button>
+
+                                    {{-- Select fica por cima (opaco 0) e ao clicar abre logo as opções --}}
+                                    <select
+                                        class="absolute inset-0 h-9 w-9 opacity-0 cursor-pointer"
+                                        aria-label="Alterar estado"
+                                        data-status-select
+                                        data-update-url="{{ $updateStatusUrl }}"
+                                    >
+                                        @foreach($statusLabels as $key => $label)
+                                            <option value="{{ $key }}" @selected($mStatus === $key)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -241,4 +286,79 @@
         </div>
     @endif
 </div>
+
+{{-- JS: update inline do estado (badge atualiza na coluna Estado) --}}
+<script>
+(function () {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    const labelMap = {
+        available: 'Disponível',
+        reserved: 'Reservada',
+        sold: 'Vendida',
+        inactive: 'Indisponível',
+    };
+
+    const classMap = {
+        available: 'bg-green-100 text-green-700',
+        reserved: 'bg-yellow-100 text-yellow-700',
+        sold: 'bg-blue-100 text-blue-700',
+        inactive: 'bg-gray-200 text-gray-700',
+    };
+
+    document.querySelectorAll('[data-status-select]').forEach((select) => {
+        let last = select.value;
+
+        select.addEventListener('change', async () => {
+            const url = select.dataset.updateUrl;
+            const value = select.value;
+
+            select.disabled = true;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ status: value }),
+                });
+
+                if (!res.ok) {
+                    select.value = last;
+                    alert('Não foi possível atualizar o estado.');
+                    return;
+                }
+
+                last = value;
+
+                // badge na mesma row
+                const row = select.closest('tr');
+                const badge = row?.querySelector('[data-status-badge]');
+
+                if (badge) {
+                    badge.textContent = labelMap[value] ?? value;
+
+                    badge.classList.remove(
+                        'bg-green-100','text-green-700',
+                        'bg-yellow-100','text-yellow-700',
+                        'bg-blue-100','text-blue-700',
+                        'bg-gray-200','text-gray-700'
+                    );
+
+                    const cls = (classMap[value] || 'bg-gray-200 text-gray-700').split(' ');
+                    cls.forEach(c => badge.classList.add(c));
+                }
+            } catch (e) {
+                select.value = last;
+                alert('Erro de rede ao atualizar o estado.');
+            } finally {
+                select.disabled = false;
+            }
+        });
+    });
+})();
+</script>
 @endsection
