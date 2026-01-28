@@ -6,25 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('machine_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('machine_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('machine_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
             $table->string('path');
             $table->unsignedInteger('sort_order')->default(0);
+            $table->boolean('is_featured')->default(false);
 
             $table->timestamps();
+
+            $table->index(['machine_id', 'is_featured']);
+            $table->index(['machine_id', 'sort_order']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('machine_images');

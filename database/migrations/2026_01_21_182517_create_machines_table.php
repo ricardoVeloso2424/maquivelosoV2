@@ -10,16 +10,28 @@ return new class extends Migration
     {
         Schema::create('machines', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
             $table->string('name');
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
             $table->decimal('price', 10, 2)->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+
+            $table->enum('status', ['available', 'reserved', 'sold', 'inactive'])
+                ->default('available');
+
             $table->text('description')->nullable();
+
+            $table->boolean('featured')
+                ->default(false);
+
             $table->timestamps();
         });
     }
-
 
     public function down(): void
     {

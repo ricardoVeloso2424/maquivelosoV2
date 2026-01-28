@@ -16,9 +16,19 @@
     </div>
 @endif
 
+@if ($errors->any())
+    <div class="mt-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl">
+        <div class="font-semibold mb-2">Corrige os erros abaixo:</div>
+        <ul class="list-disc pl-5 space-y-1 text-sm">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="mt-8 bg-white border rounded-2xl p-6">
 
-    {{-- Nova Categoria --}}
     <form method="POST" action="{{ route('admin.categories.store') }}" class="flex flex-col md:flex-row gap-4 mb-8">
         @csrf
 
@@ -26,6 +36,7 @@
             <input
                 name="name"
                 required
+                value="{{ old('name') }}"
                 placeholder="Nome da nova categoria"
                 class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-gray-400 focus:ring-gray-400"
             />
@@ -37,14 +48,13 @@
         </button>
     </form>
 
-    {{-- Filtro --}}
     <form method="GET" class="flex flex-col md:flex-row gap-4 mb-6">
         <div class="flex-1">
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 <input
                     name="q"
-                    value="{{ $q }}"
+                    value="{{ $q ?? '' }}"
                     placeholder="Pesquisar por nome..."
                     class="w-full pl-11 pr-4 py-3 rounded-xl border-gray-200 focus:border-gray-400 focus:ring-gray-400"
                 />
@@ -55,7 +65,7 @@
             Filtrar
         </button>
 
-        @if($q !== '')
+        @if(($q ?? '') !== '')
             <a href="{{ route('admin.categories.index') }}"
                class="px-5 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 font-medium text-gray-600">
                 Limpar
@@ -63,41 +73,36 @@
         @endif
     </form>
 
-    {{-- Lista --}}
     <div class="overflow-hidden rounded-2xl border border-gray-100">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 text-gray-500">
                 <tr>
                     <th class="text-left px-4 py-3 font-medium">Nome</th>
-                    <th class="text-right px-4 py-3 font-medium w-56">Ações</th>
+                    <th class="text-right px-4 py-3 font-medium w-64">Ações</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
                 @forelse($categories as $category)
                     <tr>
-                        <td class="px-4 py-4 font-medium">
-                            {{ $category->name }}
+                        <td class="px-4 py-4">
+                            <form method="POST" action="{{ route('admin.categories.update', $category) }}" class="flex items-center gap-2">
+                                @csrf
+                                @method('PUT')
+
+                                <input
+                                    name="name"
+                                    value="{{ $category->name }}"
+                                    class="w-full px-3 py-2 rounded-xl border-gray-200 focus:border-gray-400 focus:ring-gray-400 text-sm font-medium"
+                                />
+
+                                <button class="shrink-0 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-medium">
+                                    Guardar
+                                </button>
+                            </form>
                         </td>
+
                         <td class="px-4 py-4">
                             <div class="flex items-center justify-end gap-2">
-
-                                {{-- Edit inline --}}
-                                <form method="POST" action="{{ route('admin.categories.update', $category) }}" class="flex gap-2">
-                                    @csrf
-                                    @method('PUT')
-
-                                    <input
-                                        name="name"
-                                        value="{{ $category->name }}"
-                                        class="px-3 py-2 rounded-xl border-gray-200 focus:border-gray-400 focus:ring-gray-400 text-sm"
-                                    />
-
-                                    <button class="px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-medium">
-                                        Guardar
-                                    </button>
-                                </form>
-
-                                {{-- Delete --}}
                                 <form method="POST"
                                       action="{{ route('admin.categories.destroy', $category) }}"
                                       onsubmit="return confirm('Remover esta categoria?');">

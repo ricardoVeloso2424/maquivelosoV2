@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -14,7 +13,9 @@ class CategoryController extends Controller
         $q = trim((string) $request->get('q', ''));
 
         $categories = Category::query()
-            ->when($q !== '', fn ($query) => $query->where('name', 'like', "%{$q}%"))
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%");
+            })
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
@@ -22,62 +23,45 @@ class CategoryController extends Controller
         return view('admin.categories.index', compact('categories', 'q'));
     }
 
+    public function create()
+    {
+        return view('admin.categories.create');
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
         ]);
 
-        $baseSlug = Str::slug($data['name']);
-        $slug = $baseSlug;
-        $i = 2;
+        Category::create($data);
 
-        while (Category::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $i;
-            $i++;
-        }
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Categoria criada com sucesso.');
+    }
 
-        Category::create([
-            'name' => $data['name'],
-            'slug' => $slug,
-        ]);
-
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Categoria adicionada.');
+    public function edit(Category $category)
+    {
+        return view('admin.categories.edit', compact('category'));
     }
 
     public function update(Request $request, Category $category)
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name,' . $category->id],
         ]);
 
-        $baseSlug = Str::slug($data['name']);
-        $slug = $baseSlug;
-        $i = 2;
+        $category->update($data);
 
-        while (Category::where('slug', $slug)->whereKeyNot($category->id)->exists()) {
-            $slug = $baseSlug . '-' . $i;
-            $i++;
-        }
-
-        $category->update([
-            'name' => $data['name'],
-            'slug' => $slug,
-        ]);
-
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Categoria atualizada.');
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Categoria atualizada com sucesso.');
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
 
-        return redirect()
-            ->route('admin.categories.index')
-            ->with('success', 'Categoria removida.');
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Categoria removida com sucesso.');
     }
 }

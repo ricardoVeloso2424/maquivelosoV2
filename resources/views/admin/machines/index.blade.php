@@ -4,24 +4,26 @@
 
 @section('content')
 @php
+    use Illuminate\Support\Facades\Storage;
+
     $q = request('q', '');
     $category = request('category', '');
     $status = request('status', '');
 
     $statusLabels = [
-        'disponivel'   => 'Disponível',
-        'reservada'    => 'Reservada',
-        'vendida'      => 'Vendida',
-        'indisponivel' => 'Indisponível',
+        'available' => 'Disponível',
+        'reserved'  => 'Reservada',
+        'sold'      => 'Vendida',
+        'inactive'  => 'Indisponível',
     ];
 
     $badgeClass = function (?string $s) {
         return match ($s) {
-            'disponivel'   => 'bg-green-100 text-green-700',
-            'reservada'    => 'bg-yellow-100 text-yellow-700',
-            'vendida'      => 'bg-blue-100 text-blue-700',
-            'indisponivel' => 'bg-gray-200 text-gray-700',
-            default        => 'bg-gray-200 text-gray-700',
+            'available' => 'bg-green-100 text-green-700',
+            'reserved'  => 'bg-yellow-100 text-yellow-700',
+            'sold'      => 'bg-blue-100 text-blue-700',
+            'inactive'  => 'bg-gray-200 text-gray-700',
+            default     => 'bg-gray-200 text-gray-700',
         };
     };
 @endphp
@@ -38,11 +40,9 @@
     </a>
 </div>
 
-{{-- Card filtros (igual ao look da print) --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
     <form method="GET" action="{{ route('admin.machines.index') }}">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {{-- Pesquisa --}}
             <div class="lg:col-span-8">
                 <div class="relative">
                     <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -61,7 +61,6 @@
                 </div>
             </div>
 
-            {{-- Categoria --}}
             <div class="lg:col-span-2">
                 <select
                     name="category"
@@ -80,7 +79,6 @@
                 </select>
             </div>
 
-            {{-- Estado --}}
             <div class="lg:col-span-2">
                 <select
                     name="status"
@@ -116,7 +114,6 @@
     </form>
 </div>
 
-{{-- Card tabela --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -142,7 +139,18 @@
                         $imgUrl = null;
                         if ($img) {
                             $path = $img->path ?? $img->url ?? $img->image_path ?? null;
-                            if ($path) $imgUrl = str_starts_with($path, 'http') ? $path : asset('storage/'.$path);
+
+                            if ($path) {
+                                if (str_starts_with($path, 'http')) {
+                                    $imgUrl = $path;
+                                } else {
+                                    $path = ltrim($path, '/');
+                                    if (str_starts_with($path, 'public/')) {
+                                        $path = substr($path, 7);
+                                    }
+                                    $imgUrl = Storage::url($path);
+                                }
+                            }
                         }
 
                         $mName = $machine->name ?? $machine->nome ?? '—';
@@ -201,7 +209,6 @@
 
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-end gap-3">
-                                {{-- editar (ícone) --}}
                                 <a href="{{ route('admin.machines.edit', $machine) }}"
                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -210,7 +217,6 @@
                                     </svg>
                                 </a>
 
-                                {{-- botão "Estado" (por agora vai para editar; depois fazemos dropdown real) --}}
                                 <a href="{{ route('admin.machines.edit', $machine) }}"
                                    class="inline-flex h-9 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 hover:bg-gray-50">
                                     Estado
