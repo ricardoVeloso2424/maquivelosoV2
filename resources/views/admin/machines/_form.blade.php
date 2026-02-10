@@ -11,6 +11,7 @@
             'price'       => ['price', 'preco'],
             'status'      => ['status', 'estado'],
             'featured'    => ['featured', 'destaque', 'is_featured'],
+            'negotiable'  => ['negotiable', 'negociable'],
         ];
 
         $candidates = $map[$key] ?? [$key];
@@ -36,6 +37,9 @@
 
     $featuredVal = $val('featured', 0);
     $isFeatured  = (string)$featuredVal === '1' || $featuredVal === 1 || $featuredVal === true;
+
+    $negVal = $val('negotiable', 0);
+    $isNegotiable = (string)$negVal === '1' || $negVal === 1 || $negVal === true;
 
     $existingImages = collect();
 
@@ -67,7 +71,6 @@
     </div>
 @endif
 
-{{-- Imagens existentes (FORA do form principal) --}}
 @if($isEdit && $existingImages->count())
     <div class="mt-6">
         <div class="text-sm font-semibold text-gray-900">Imagens atuais</div>
@@ -120,7 +123,6 @@
         @method('PUT')
     @endif
 
-    {{-- Upload novas imagens --}}
     <div>
         <div class="text-sm font-semibold text-gray-900">Adicionar imagens</div>
 
@@ -238,6 +240,20 @@
         </label>
     </div>
 
+    <div class="flex items-center gap-3">
+        <input
+            id="negotiable"
+            type="checkbox"
+            name="negotiable"
+            value="1"
+            @checked($isNegotiable)
+            class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+        />
+        <label for="negotiable" class="text-sm font-semibold text-gray-900">
+            Negociável
+        </label>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
         <a href="{{ route('admin.machines.index') }}"
            class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50">
@@ -256,7 +272,6 @@
 
 <script>
 (function () {
-    // Preview de novas imagens
     const input = document.getElementById('imagesInput');
     const preview = document.getElementById('new-images-preview');
     if (input && preview) {
@@ -282,7 +297,6 @@
         });
     }
 
-    // Anti duplo clique no submit
     const form = document.getElementById('machineForm');
     const btn = document.getElementById('submitBtn');
     if (form && btn) {

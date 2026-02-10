@@ -15,10 +15,12 @@ class Machine extends Model
         'status',
         'description',
         'featured',
+        'negotiable',        
     ];
 
     protected $casts = [
         'featured' => 'boolean',
+        'negotiable' => 'boolean',
     ];
 
     public function category()

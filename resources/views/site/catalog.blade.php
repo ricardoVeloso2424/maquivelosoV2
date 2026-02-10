@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('title', 'Catálogo')
+@extends('layouts.site')
 
 @section('content')
 @php
@@ -17,7 +15,7 @@
         $path = ltrim($path, '/');
         if (str_starts_with($path, 'public/')) $path = substr($path, 7);
 
-        return Storage::url($path); // /storage/...
+        return Storage::url($path);
     };
 
     $money = function ($value) {
@@ -32,7 +30,6 @@
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-    {{-- Header --}}
     <div>
         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">Catálogo</h1>
         <p class="mt-2 text-sm text-gray-600">
@@ -40,11 +37,9 @@
         </p>
     </div>
 
-    {{-- Filtros --}}
     <div class="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
         <form method="GET" action="{{ route('site.catalog') }}" class="space-y-4">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                {{-- Pesquisa --}}
                 <div class="lg:col-span-7">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Pesquisar</label>
                     <div class="relative">
@@ -63,7 +58,6 @@
                     </div>
                 </div>
 
-                {{-- Categoria --}}
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Categoria</label>
                     <select
@@ -72,14 +66,11 @@
                     >
                         <option value="">Todas</option>
                         @foreach(($categories ?? []) as $cat)
-                            <option value="{{ $cat->id }}" @selected((string)$category === (string)$cat->id)>
-                                {{ $cat->name }}
-                            </option>
+                            <option value="{{ $cat->id }}" @selected((string)$category === (string)$cat->id)>{{ $cat->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Preço (ainda não filtras no controller; fica como input “placeholder”) --}}
                 <div class="lg:col-span-2">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Preço</label>
                     <input
@@ -110,7 +101,6 @@
         </form>
     </div>
 
-    {{-- Grid --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse(($machines ?? []) as $machine)
             @php
@@ -118,7 +108,14 @@
                 $imgUrl = $imgUrlFrom($firstImg);
 
                 $name = $machine->name ?? '—';
+
                 $priceText = $money($machine->price);
+                $isNegotiable = (bool)($machine->negotiable ?? false);
+
+                $showPrice = (bool)$priceText;
+                $showNegotiable = $isNegotiable;
+
+                $showSobConsulta = !$showPrice && !$showNegotiable;
             @endphp
 
             <a href="{{ route('site.machine.show', $machine) }}"
@@ -141,10 +138,20 @@
                     <div class="font-semibold text-gray-900 truncate">{{ $name }}</div>
 
                     <div class="mt-1 text-sm">
-                        @if($priceText)
-                            <span class="font-semibold text-gray-900">{{ $priceText }}</span>
-                        @else
+                        @if($showSobConsulta)
                             <span class="text-gray-500">Sob consulta</span>
+                        @else
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if($showPrice)
+                                    <span class="font-semibold text-gray-900">{{ $priceText }}</span>
+                                @endif
+
+                                @if($showNegotiable)
+                                    <span class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                                        Negociável
+                                    </span>
+                                @endif
+                            </div>
                         @endif
                     </div>
 
@@ -158,7 +165,6 @@
         @endforelse
     </div>
 
-    {{-- Paginação --}}
     @if(isset($machines) && method_exists($machines, 'links'))
         <div class="pt-2">
             {{ $machines->appends(request()->query())->links() }}

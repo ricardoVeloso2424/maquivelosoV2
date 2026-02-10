@@ -29,6 +29,9 @@ return new class extends Migration
             $table->boolean('featured')
                 ->default(false);
 
+            $table->boolean('negotiable')
+                ->default(false);
+
             $table->timestamps();
         });
     }

@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('title', ($machine->name ?? 'Máquina') . ' - Detalhes')
+@extends('layouts.site')
 
 @section('content')
 @php
@@ -37,8 +35,6 @@
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-    {{-- Voltar --}}
     <div>
         <a href="{{ route('site.catalog') }}"
            class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50">
@@ -50,8 +46,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-        {{-- Galeria --}}
         <div class="lg:col-span-7 space-y-4">
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
                 <div class="aspect-[4/3] bg-gray-100">
@@ -69,7 +63,7 @@
                 </div>
             </div>
 
-            @if($images->count() > 0)
+            @if($images->count() > 1)
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
                     @foreach($images as $img)
                         @php $u = $imgUrlFrom($img); @endphp
@@ -85,7 +79,6 @@
             @endif
         </div>
 
-        {{-- Info --}}
         <div class="lg:col-span-5 space-y-6">
             <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
@@ -106,6 +99,12 @@
                     @if($categoryName)
                         <span class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
                             {{ $categoryName }}
+                        </span>
+                    @endif
+
+                    @if(isset($machine->negotiable) && $machine->negotiable)
+                        <span class="inline-flex items-center rounded-xl bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                            Negociável
                         </span>
                     @endif
                 </div>

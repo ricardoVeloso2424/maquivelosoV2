@@ -29,8 +29,8 @@ class MachineController extends Controller
                         ->orWhere('model', 'like', "%{$q}%");
                 });
             })
-            ->when($category !== '', fn($query) => $query->where('category_id', $category))
-            ->when($status !== '', fn($query) => $query->where('status', $status))
+            ->when($category !== '', fn ($query) => $query->where('category_id', $category))
+            ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -58,15 +58,16 @@ class MachineController extends Controller
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', 'in:' . implode(',', self::STATUS)],
+            'status' => ['required', Rule::in(self::STATUS)],
             'description' => ['nullable', 'string'],
             'featured' => ['nullable', 'boolean'],
-
+            'negotiable' => ['nullable', 'boolean'],
             'images' => ['nullable', 'array'],
             'images.*' => ['file', 'image', 'max:16144'],
         ]);
 
         $data['featured'] = $request->boolean('featured');
+        $data['negotiable'] = $request->boolean('negotiable');
 
         $machine = Machine::create($data);
 
@@ -84,7 +85,7 @@ class MachineController extends Controller
 
     public function edit(Machine $machine)
     {
-        $machine->load('images');
+        $machine->load(['category', 'images']);
 
         $categories = Category::query()->orderBy('name')->get();
 
@@ -99,15 +100,16 @@ class MachineController extends Controller
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', 'in:' . implode(',', self::STATUS)],
+            'status' => ['required', Rule::in(self::STATUS)],
             'description' => ['nullable', 'string'],
             'featured' => ['nullable', 'boolean'],
-
+            'negotiable' => ['nullable', 'boolean'],
             'images' => ['nullable', 'array'],
             'images.*' => ['file', 'image', 'max:16144'],
         ]);
 
         $data['featured'] = $request->boolean('featured');
+        $data['negotiable'] = $request->boolean('negotiable');
 
         $machine->update($data);
 
@@ -142,6 +144,19 @@ class MachineController extends Controller
         return back()->with('success', 'Imagem removida com sucesso.');
     }
 
+    public function updateStatus(Request $request, Machine $machine)
+    {
+        $data = $request->validate([
+            'status' => ['required', Rule::in(self::STATUS)],
+        ]);
+
+        $machine->update([
+            'status' => $data['status'],
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
+
     private function storeImages(Machine $machine, Request $request): void
     {
         $files = $request->file('images', []);
@@ -171,18 +186,5 @@ class MachineController extends Controller
         if ($path !== '' && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
-    }
-
-    public function updateStatus(Request $request, Machine $machine)
-    {
-        $data = $request->validate([
-            'status' => ['required', Rule::in(self::STATUS)],
-        ]);
-
-        $machine->update([
-            'status' => $data['status'],
-        ]);
-
-        return response()->json(['ok' => true]);
     }
 }

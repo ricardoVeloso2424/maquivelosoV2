@@ -1,4 +1,3 @@
-{{-- resources/views/admin/machines/index.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Máquinas')
@@ -41,11 +40,9 @@
     </a>
 </div>
 
-{{-- Filtros --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
     <form method="GET" action="{{ route('admin.machines.index') }}">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            {{-- Pesquisa --}}
             <div class="lg:col-span-8">
                 <div class="relative">
                     <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -64,7 +61,6 @@
                 </div>
             </div>
 
-            {{-- Categoria --}}
             <div class="lg:col-span-2">
                 <select
                     name="category"
@@ -83,7 +79,6 @@
                 </select>
             </div>
 
-            {{-- Estado --}}
             <div class="lg:col-span-2">
                 <select
                     name="status"
@@ -119,7 +114,6 @@
     </form>
 </div>
 
-{{-- Tabela --}}
 <div class="mt-8 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -130,6 +124,7 @@
                     <th class="px-6 py-4 font-semibold">Categoria</th>
                     <th class="px-6 py-4 font-semibold">Preço</th>
                     <th class="px-6 py-4 font-semibold">Estado</th>
+                    <th class="px-6 py-4 font-semibold">Neg.</th>
                     <th class="px-6 py-4 font-semibold">Data</th>
                     <th class="px-6 py-4 font-semibold text-right">Ações</th>
                 </tr>
@@ -156,17 +151,17 @@
                             }
                         }
 
-                        $mName     = $machine->name ?? $machine->nome ?? '—';
-                        $mCategory = $machine->category->name ?? $machine->category->nome ?? '—';
-                        $mPrice    = $machine->price ?? $machine->preco ?? null;
-                        $mStatus   = $machine->status ?? $machine->estado ?? null;
-                        $createdAt = $machine->created_at ?? null;
+                        $mName       = $machine->name ?? $machine->nome ?? '—';
+                        $mCategory   = $machine->category->name ?? $machine->category->nome ?? '—';
+                        $mPrice      = $machine->price ?? $machine->preco ?? null;
+                        $mStatus     = $machine->status ?? $machine->estado ?? null;
+                        $mNegotiable = (bool)($machine->negotiable ?? false);
+                        $createdAt   = $machine->created_at ?? null;
 
                         $updateStatusUrl = route('admin.machines.updateStatus', $machine);
                     @endphp
 
                     <tr class="hover:bg-gray-50/60">
-                        {{-- Foto --}}
                         <td class="px-6 py-4">
                             <div class="h-14 w-14 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-200">
                                 @if($imgUrl)
@@ -183,17 +178,14 @@
                             </div>
                         </td>
 
-                        {{-- Nome --}}
                         <td class="px-6 py-4">
                             <div class="font-semibold text-gray-900">{{ $mName }}</div>
                         </td>
 
-                        {{-- Categoria --}}
                         <td class="px-6 py-4 text-gray-800">
                             {{ $mCategory }}
                         </td>
 
-                        {{-- Preço --}}
                         <td class="px-6 py-4 text-gray-800">
                             @if($mPrice === null || $mPrice === '')
                                 -
@@ -202,7 +194,6 @@
                             @endif
                         </td>
 
-                        {{-- Estado (badge) --}}
                         <td class="px-6 py-4">
                             <span
                                 class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}"
@@ -212,7 +203,14 @@
                             </span>
                         </td>
 
-                        {{-- Data --}}
+                        <td class="px-6 py-4">
+                            @if($mNegotiable)
+                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold" title="Negociável">N</span>
+                            @else
+                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-xs font-bold" title="Não negociável">—</span>
+                            @endif
+                        </td>
+
                         <td class="px-6 py-4 text-gray-500">
                             @if($createdAt)
                                 {{ \Carbon\Carbon::parse($createdAt)->format('d/m/Y') }}
@@ -221,10 +219,8 @@
                             @endif
                         </td>
 
-                        {{-- Ações: lápis + botão-ícone que abre o select --}}
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-end gap-2">
-                                {{-- Editar --}}
                                 <a href="{{ route('admin.machines.edit', $machine) }}"
                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -233,14 +229,12 @@
                                     </svg>
                                 </a>
 
-                                {{-- Trigger (ícone) + select invisível por cima para abrir opções --}}
                                 <div class="relative inline-flex">
                                     <button
                                         type="button"
                                         class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                                         title="Alterar estado"
                                     >
-                                        {{-- sliders icon --}}
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M4 21v-7"></path>
                                             <path d="M4 10V3"></path>
@@ -254,7 +248,6 @@
                                         </svg>
                                     </button>
 
-                                    {{-- Select fica por cima (opaco 0) e ao clicar abre logo as opções --}}
                                     <select
                                         class="absolute inset-0 h-9 w-9 opacity-0 cursor-pointer"
                                         aria-label="Alterar estado"
@@ -271,7 +264,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-16 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-16 text-center text-gray-500">
                             Ainda não tens máquinas. Clica em <span class="font-semibold">Nova Máquina</span>.
                         </td>
                     </tr>
@@ -287,7 +280,6 @@
     @endif
 </div>
 
-{{-- JS: update inline do estado (badge atualiza na coluna Estado) --}}
 <script>
 (function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -334,7 +326,6 @@
 
                 last = value;
 
-                // badge na mesma row
                 const row = select.closest('tr');
                 const badge = row?.querySelector('[data-status-badge]');
 

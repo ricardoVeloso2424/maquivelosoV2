@@ -13,7 +13,7 @@
         </p>
 
         <a href="{{ route('site.catalog') }}"
-            class="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">
+           class="inline-block px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">
             Ver catálogo
         </a>
     </div>
