@@ -1,31 +1,38 @@
-@extends('layouts.site')
+﻿@extends('layouts.site')
 
 @section('content')
 @php
 
     $money = function ($value) {
         if ($value === null || $value === '') return null;
-        return number_format((float)$value, 0, ',', '.') . ' €';
+        return number_format((float)$value, 0, ',', '.') . ' â‚¬';
     };
 
     $q        = $q        ?? request('q', '');
     $category = $category ?? request('category', '');
-    $price    = $price    ?? request('price', '');
+    $priceMin = $priceMin ?? request('price_min', '');
+    $priceMax = $priceMax ?? request('price_max', request('price', ''));
+    $sort     = $sort     ?? request('sort', 'name');
+    $dir      = $dir      ?? request('dir', 'asc');
+
+    if ($sort === 'name') {
+        $dir = 'asc';
+    }
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
     <div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">Catálogo</h1>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">CatÃ¡logo</h1>
         <p class="mt-2 text-sm text-gray-600">
-            Mostra 1 foto, nome e preço. Detalhes só ao abrir a máquina.
+            Mostra 1 foto, nome e preÃ§o. Detalhes sÃ³ ao abrir a mÃ¡quina.
         </p>
     </div>
 
     <div class="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
         <form method="GET" action="{{ route('site.catalog') }}" class="space-y-4">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <div class="lg:col-span-7">
+                <div class="lg:col-span-4">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Pesquisar</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -43,7 +50,26 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-3">
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Ordenar</label>
+                    @php
+                        $sortOption = $sort === 'price'
+                            ? ($dir === 'desc' ? 'price_desc' : 'price_asc')
+                            : 'name_asc';
+                    @endphp
+                    <select
+                        id="sort_option"
+                        class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    >
+                        <option value="name_asc" @selected($sortOption === 'name_asc')>Nome (A-Z)</option>
+                        <option value="price_asc" @selected($sortOption === 'price_asc')>Preco: mais barato</option>
+                        <option value="price_desc" @selected($sortOption === 'price_desc')>Preco: mais caro</option>
+                    </select>
+                    <input type="hidden" name="sort" id="sort_field" value="{{ $sort }}">
+                    <input type="hidden" name="dir" id="dir_field" value="{{ $dir }}">
+                </div>
+
+                <div class="lg:col-span-2">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Categoria</label>
                     <select
                         name="category"
@@ -57,11 +83,21 @@
                 </div>
 
                 <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço</label>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preco minimo</label>
                     <input
-                        name="price"
-                        value="{{ $price }}"
-                        placeholder="(opcional)"
+                        name="price_min"
+                        value="{{ $priceMin }}"
+                        placeholder="Ex: 500"
+                        class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    />
+                </div>
+
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preco maximo</label>
+                    <input
+                        name="price_max"
+                        value="{{ $priceMax }}"
+                        placeholder="Ex: 1200"
                         class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
                     />
                 </div>
@@ -92,7 +128,7 @@
                 $firstImg = $machine->firstImage ?? null;
                 $imgUrl = $firstImg?->public_url;
 
-                $name = $machine->name ?? '—';
+                $name = $machine->name ?? 'â€”';
 
                 $priceText = $money($machine->price);
                 $isNegotiable = (bool)($machine->negotiable ?? false);
@@ -133,7 +169,7 @@
 
                                 @if($showNegotiable)
                                     <span class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                                        Negociável
+                                        NegociÃ¡vel
                                     </span>
                                 @endif
                             </div>
@@ -145,7 +181,7 @@
             </a>
         @empty
             <div class="col-span-full rounded-2xl border border-gray-100 bg-white p-10 text-center text-gray-600">
-                Não há máquinas disponíveis.
+                NÃ£o hÃ¡ mÃ¡quinas disponÃ­veis.
             </div>
         @endforelse
     </div>
@@ -156,5 +192,36 @@
         </div>
     @endif
 </div>
+<script>
+(() => {
+    const sortOption = document.getElementById('sort_option');
+    const sortField = document.getElementById('sort_field');
+    const dirField = document.getElementById('dir_field');
+
+    if (!sortOption || !sortField || !dirField) {
+        return;
+    }
+
+    const applySortSelection = () => {
+        switch (sortOption.value) {
+            case 'price_desc':
+                sortField.value = 'price';
+                dirField.value = 'desc';
+                break;
+            case 'price_asc':
+                sortField.value = 'price';
+                dirField.value = 'asc';
+                break;
+            default:
+                sortField.value = 'name';
+                dirField.value = 'asc';
+        }
+    };
+
+    applySortSelection();
+    sortOption.addEventListener('change', applySortSelection);
+})();
+</script>
 @endsection
+
 

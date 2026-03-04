@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
-    private const ADMIN_EMAIL = 'ddfbae@gmail.com';
+    private const ADMIN_EMAIL = 'admin@maquiveloso.com';
 
     /**
      * Seed a default admin user for local development.
