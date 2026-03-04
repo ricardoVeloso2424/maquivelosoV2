@@ -4,8 +4,6 @@
 
 @section('content')
 @php
-    use Illuminate\Support\Facades\Storage;
-
     $q        = request('q', '');
     $category = request('category', '');
     $status   = request('status', '');
@@ -135,19 +133,7 @@
                     @php
                         $img = $machine->firstImage;
 
-                        $imgUrl = null;
-                        if ($img) {
-                            $path = $img->path ?? $img->url ?? $img->image_path ?? null;
-                            if ($path) {
-                                if (str_starts_with($path, 'http')) {
-                                    $imgUrl = $path;
-                                } else {
-                                    $path = ltrim($path, '/');
-                                    if (str_starts_with($path, 'public/')) $path = substr($path, 7);
-                                    $imgUrl = Storage::url($path);
-                                }
-                            }
-                        }
+                        $imgUrl = $img?->public_url;
 
                         $mName       = $machine->name ?? $machine->nome ?? '—';
                         $mCategory   = $machine->category->name ?? $machine->category->nome ?? '—';
@@ -351,3 +337,4 @@
 })();
 </script>
 @endsection
+

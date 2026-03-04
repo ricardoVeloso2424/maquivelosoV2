@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
 
             try {
                 if (Schema::hasTable('settings')) {
-                    $settings = Setting::getMany($defaults);
+                    $settings = Setting::getSiteSettings($defaults);
                 }
             } catch (\Throwable) {
                 // Keep defaults when DB/table is unavailable.

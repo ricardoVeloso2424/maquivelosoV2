@@ -2,21 +2,6 @@
 
 @section('content')
 @php
-    use Illuminate\Support\Facades\Storage;
-
-    $imgUrlFrom = function ($img) {
-        if (!$img) return null;
-
-        $path = $img->path ?? null;
-        if (!$path) return null;
-
-        if (str_starts_with($path, 'http')) return $path;
-
-        $path = ltrim($path, '/');
-        if (str_starts_with($path, 'public/')) $path = substr($path, 7);
-
-        return Storage::url($path);
-    };
 
     $money = function ($value) {
         if ($value === null || $value === '') return null;
@@ -31,7 +16,7 @@
     $main = $machine->featuredImage ?? null;
     if (!$main && $images->count()) $main = $images->first();
 
-    $mainUrl = $imgUrlFrom($main);
+    $mainUrl = $main?->public_url;
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -66,7 +51,7 @@
             @if($images->count() > 1)
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
                     @foreach($images as $img)
-                        @php $u = $imgUrlFrom($img); @endphp
+                        @php $u = $img->public_url; @endphp
                         <a href="{{ $u }}" target="_blank"
                            class="block h-20 w-20 rounded-xl overflow-hidden ring-1 ring-gray-200 bg-gray-100 hover:ring-gray-400">
                             @if($u)
@@ -152,3 +137,4 @@
     </div>
 </div>
 @endsection
+

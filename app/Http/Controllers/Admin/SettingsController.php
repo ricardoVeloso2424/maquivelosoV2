@@ -10,7 +10,7 @@ class SettingsController extends Controller
 {
     public function edit()
     {
-        $data = Setting::getMany([
+        $data = Setting::getSiteSettings([
             'business_name' => 'MaquiVeloso',
             'phone' => '',
             'email' => '',

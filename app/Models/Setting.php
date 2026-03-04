@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
+    public const SITE_SETTINGS_CACHE_KEY = 'settings.site';
+
     protected $fillable = ['key', 'value'];
 
     public static function get(string $key, $default = null)
@@ -30,11 +33,25 @@ class Setting extends Model
         return $defaults;
     }
 
+    public static function getSiteSettings(array $defaults): array
+    {
+        return Cache::rememberForever(self::SITE_SETTINGS_CACHE_KEY, function () use ($defaults) {
+            return static::getMany($defaults);
+        });
+    }
+
+    public static function clearSiteSettingsCache(): void
+    {
+        Cache::forget(self::SITE_SETTINGS_CACHE_KEY);
+    }
+
     public static function set(string $key, $value): void
     {
         static::query()->updateOrCreate(
             ['key' => $key],
             ['value' => $value]
         );
+
+        static::clearSiteSettingsCache();
     }
 }

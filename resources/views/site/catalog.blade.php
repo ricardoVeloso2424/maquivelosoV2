@@ -2,21 +2,6 @@
 
 @section('content')
 @php
-    use Illuminate\Support\Facades\Storage;
-
-    $imgUrlFrom = function ($img) {
-        if (!$img) return null;
-
-        $path = $img->path ?? null;
-        if (!$path) return null;
-
-        if (str_starts_with($path, 'http')) return $path;
-
-        $path = ltrim($path, '/');
-        if (str_starts_with($path, 'public/')) $path = substr($path, 7);
-
-        return Storage::url($path);
-    };
 
     $money = function ($value) {
         if ($value === null || $value === '') return null;
@@ -105,7 +90,7 @@
         @forelse(($machines ?? []) as $machine)
             @php
                 $firstImg = $machine->firstImage ?? null;
-                $imgUrl = $imgUrlFrom($firstImg);
+                $imgUrl = $firstImg?->public_url;
 
                 $name = $machine->name ?? '—';
 
@@ -172,3 +157,4 @@
     @endif
 </div>
 @endsection
+
