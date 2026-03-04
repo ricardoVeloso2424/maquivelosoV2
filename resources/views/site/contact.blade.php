@@ -6,13 +6,13 @@
 
     <div class="bg-white border rounded-xl p-6 space-y-4">
         <p class="text-sm text-gray-700">
-            O formulÃ¡rio de contacto online estÃ¡ temporariamente indisponÃ­vel.
+            O formulário de contacto online está temporariamente indisponível.
         </p>
         <p class="text-sm text-gray-700">
-            Para pedidos, por favor utilize os contactos no rodapÃ© do site.
+            Para pedidos, por favor utilize os contactos no rodapé do site.
         </p>
         <a href="{{ route('site.home') }}" class="inline-flex px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">
-            Voltar ao inÃ­cio
+            Voltar ao início
         </a>
     </div>
 </section>
