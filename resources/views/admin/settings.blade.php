@@ -30,13 +30,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
                     <input
-                        name="phone"
+                        name="contact_phone"
                         type="text"
-                        value="{{ old('phone', $phone ?? '') }}"
+                        value="{{ old('contact_phone', $contact_phone ?? '') }}"
                         class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                         placeholder="960 000 000"
                     >
-                    @error('phone')
+                    @error('contact_phone')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -44,27 +44,55 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input
-                        name="email"
+                        name="contact_email"
                         type="email"
-                        value="{{ old('email', $email ?? '') }}"
+                        value="{{ old('contact_email', $contact_email ?? '') }}"
                         class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                         placeholder="contacto@maquiveloso.pt"
                     >
-                    @error('email')
+                    @error('contact_email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Morada</label>
                     <input
-                        name="location"
+                        name="contact_address"
                         type="text"
-                        value="{{ old('location', $location ?? '') }}"
+                        value="{{ old('contact_address', $contact_address ?? '') }}"
                         class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                         placeholder="Braga, Portugal"
                     >
-                    @error('location')
+                    @error('contact_address')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp (opcional)</label>
+                    <input
+                        name="contact_whatsapp"
+                        type="text"
+                        value="{{ old('contact_whatsapp', $contact_whatsapp ?? '') }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+                        placeholder="+351960000000"
+                    >
+                    @error('contact_whatsapp')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Horário (opcional)</label>
+                    <input
+                        name="contact_hours"
+                        type="text"
+                        value="{{ old('contact_hours', $contact_hours ?? '') }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+                        placeholder="Seg-Sex: 09:00-18:00"
+                    >
+                    @error('contact_hours')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

@@ -11,9 +11,9 @@
 <body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
     @php
         $businessName = $siteSettings['business_name'] ?? 'MaquiVeloso';
-        $phone = $siteSettings['phone'] ?? '';
-        $email = $siteSettings['email'] ?? '';
-        $location = $siteSettings['location'] ?? '';
+        $phone = $siteSettings['contact_phone'] ?? ($siteSettings['phone'] ?? '');
+        $email = $siteSettings['contact_email'] ?? ($siteSettings['email'] ?? '');
+        $location = $siteSettings['contact_address'] ?? ($siteSettings['location'] ?? '');
     @endphp
 
     <header class="bg-white border-b">
