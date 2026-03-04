@@ -10,12 +10,12 @@ class SettingsController extends Controller
 {
     public function edit()
     {
-        $data = [
-            'business_name' => Setting::get('business_name', 'MaquiVeloso'),
-            'phone'         => Setting::get('phone', ''),
-            'email'         => Setting::get('email', ''),
-            'location'      => Setting::get('location', ''),
-        ];
+        $data = Setting::getMany([
+            'business_name' => 'MaquiVeloso',
+            'phone' => '',
+            'email' => '',
+            'location' => '',
+        ]);
 
         return view('admin.settings', $data);
     }
