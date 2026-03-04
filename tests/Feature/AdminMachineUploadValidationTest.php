@@ -46,7 +46,6 @@ class AdminMachineUploadValidationTest extends TestCase
     {
         return User::factory()->create([
             'is_admin' => true,
-            'email_verified_at' => now(),
         ]);
     }
 }
