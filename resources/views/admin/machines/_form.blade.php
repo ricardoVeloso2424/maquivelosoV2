@@ -45,7 +45,6 @@
 
     if (isset($machine) && $machine) {
         if (isset($machine->images) && $machine->images) $existingImages = $existingImages->merge($machine->images);
-        if (isset($machine->machineImages) && $machine->machineImages) $existingImages = $existingImages->merge($machine->machineImages);
     }
 
     $existingImages = $existingImages
@@ -53,11 +52,6 @@
         ->unique(fn ($img) => $img->id ?? spl_object_id($img))
         ->values();
 
-    $imgUrlFrom = function ($img) {
-        $path = $img->path ?? $img->url ?? $img->image_path ?? null;
-        if (!$path) return null;
-        return str_starts_with($path, 'http') ? $path : asset('storage/' . ltrim($path, '/'));
-    };
 @endphp
 
 @if ($errors->any())
@@ -77,7 +71,7 @@
 
         <div class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-3">
             @foreach($existingImages as $img)
-                @php $u = $imgUrlFrom($img); @endphp
+                @php $u = $img->public_url; @endphp
 
                 <div class="relative h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100">
                     @if($u)
@@ -142,7 +136,7 @@
             <div class="text-xs text-gray-500 leading-relaxed pt-1">
                 Podes selecionar várias imagens (Ctrl).
                 <br>
-                Máx: 15MB por imagem.
+                Máx: 8 imagens, 5MB por imagem.
             </div>
         </div>
     </div>

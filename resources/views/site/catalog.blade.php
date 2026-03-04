@@ -2,22 +2,6 @@
 
 @section('content')
 @php
-    use Illuminate\Support\Facades\Storage;
-
-    $imgUrlFrom = function ($img) {
-        if (!$img) return null;
-
-        $path = $img->path ?? null;
-        if (!$path) return null;
-
-        if (str_starts_with($path, 'http')) return $path;
-
-        $path = ltrim($path, '/');
-        if (str_starts_with($path, 'public/')) $path = substr($path, 7);
-
-        return Storage::url($path);
-    };
-
     $money = function ($value) {
         if ($value === null || $value === '') return null;
         return number_format((float)$value, 0, ',', '.') . ' €';
@@ -25,22 +9,22 @@
 
     $q        = $q        ?? request('q', '');
     $category = $category ?? request('category', '');
-    $price    = $price    ?? request('price', '');
+    $priceMin = $priceMin ?? request('price_min', '');
+    $priceMax = $priceMax ?? request('price_max', request('price', ''));
+    $sort     = $sort     ?? request('sort', 'name');
+    $dir      = $dir      ?? request('dir', 'asc');
+
+    if ($sort === 'name') {
+        $dir = 'asc';
+    }
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-    <div>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">Catálogo</h1>
-        <p class="mt-2 text-sm text-gray-600">
-            Mostra 1 foto, nome e preço. Detalhes só ao abrir a máquina.
-        </p>
-    </div>
-
     <div class="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
         <form method="GET" action="{{ route('site.catalog') }}" class="space-y-4">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <div class="lg:col-span-7">
+                <div class="lg:col-span-4">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Pesquisar</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
@@ -58,7 +42,26 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-3">
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Ordenar</label>
+                    @php
+                        $sortOption = $sort === 'price'
+                            ? ($dir === 'desc' ? 'price_desc' : 'price_asc')
+                            : 'name_asc';
+                    @endphp
+                    <select
+                        id="sort_option"
+                        class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    >
+                        <option value="name_asc" @selected($sortOption === 'name_asc')>Nome (A–Z)</option>
+                        <option value="price_asc" @selected($sortOption === 'price_asc')>Preço: mais barato</option>
+                        <option value="price_desc" @selected($sortOption === 'price_desc')>Preço: mais caro</option>
+                    </select>
+                    <input type="hidden" name="sort" id="sort_field" value="{{ $sort }}">
+                    <input type="hidden" name="dir" id="dir_field" value="{{ $dir }}">
+                </div>
+
+                <div class="lg:col-span-2">
                     <label class="block text-sm font-semibold text-gray-900 mb-2">Categoria</label>
                     <select
                         name="category"
@@ -72,11 +75,21 @@
                 </div>
 
                 <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço</label>
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço mínimo</label>
                     <input
-                        name="price"
-                        value="{{ $price }}"
-                        placeholder="(opcional)"
+                        name="price_min"
+                        value="{{ $priceMin }}"
+                        placeholder="Ex.: 500"
+                        class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    />
+                </div>
+
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço máximo</label>
+                    <input
+                        name="price_max"
+                        value="{{ $priceMax }}"
+                        placeholder="Ex.: 1200"
                         class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
                     />
                 </div>
@@ -104,8 +117,8 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse(($machines ?? []) as $machine)
             @php
-                $firstImg = $machine->images->first() ?? null;
-                $imgUrl = $imgUrlFrom($firstImg);
+                $firstImg = $machine->firstImage ?? null;
+                $imgUrl = $firstImg?->public_url;
 
                 $name = $machine->name ?? '—';
 
@@ -171,4 +184,35 @@
         </div>
     @endif
 </div>
+
+<script>
+(() => {
+    const sortOption = document.getElementById('sort_option');
+    const sortField = document.getElementById('sort_field');
+    const dirField = document.getElementById('dir_field');
+
+    if (!sortOption || !sortField || !dirField) {
+        return;
+    }
+
+    const applySortSelection = () => {
+        switch (sortOption.value) {
+            case 'price_desc':
+                sortField.value = 'price';
+                dirField.value = 'desc';
+                break;
+            case 'price_asc':
+                sortField.value = 'price';
+                dirField.value = 'asc';
+                break;
+            default:
+                sortField.value = 'name';
+                dirField.value = 'asc';
+        }
+    };
+
+    applySortSelection();
+    sortOption.addEventListener('change', applySortSelection);
+})();
+</script>
 @endsection

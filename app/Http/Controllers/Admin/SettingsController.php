@@ -10,12 +10,21 @@ class SettingsController extends Controller
 {
     public function edit()
     {
-        $data = [
-            'business_name' => Setting::get('business_name', 'MaquiVeloso'),
-            'phone'         => Setting::get('phone', ''),
-            'email'         => Setting::get('email', ''),
-            'location'      => Setting::get('location', ''),
-        ];
+        $data = Setting::getSiteSettings([
+            'business_name' => 'MaquiVeloso',
+            'phone' => '',
+            'email' => '',
+            'location' => '',
+            'contact_phone' => '',
+            'contact_email' => '',
+            'contact_address' => '',
+            'contact_whatsapp' => '',
+            'contact_hours' => '',
+        ]);
+
+        $data['contact_phone'] = $data['contact_phone'] !== '' ? $data['contact_phone'] : $data['phone'];
+        $data['contact_email'] = $data['contact_email'] !== '' ? $data['contact_email'] : $data['email'];
+        $data['contact_address'] = $data['contact_address'] !== '' ? $data['contact_address'] : $data['location'];
 
         return view('admin.settings', $data);
     }
@@ -24,12 +33,20 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'business_name' => ['required', 'string', 'max:255'],
-            'phone'         => ['nullable', 'string', 'max:50'],
-            'email'         => ['nullable', 'email', 'max:255'],
-            'location'      => ['nullable', 'string', 'max:255'],
+            'contact_phone' => ['nullable', 'string', 'max:50'],
+            'contact_email' => ['nullable', 'email', 'max:255'],
+            'contact_address' => ['nullable', 'string', 'max:500'],
+            'contact_whatsapp' => ['nullable', 'string', 'max:50'],
+            'contact_hours' => ['nullable', 'string', 'max:255'],
         ]);
 
-        foreach ($validated as $key => $value) {
+        $legacySettings = [
+            'phone' => $validated['contact_phone'] ?? null,
+            'email' => $validated['contact_email'] ?? null,
+            'location' => $validated['contact_address'] ?? null,
+        ];
+
+        foreach (array_merge($validated, $legacySettings) as $key => $value) {
             Setting::set($key, $value);
         }
 

@@ -33,9 +33,13 @@ class Machine extends Model
         return $this->hasMany(MachineImage::class)->orderBy('sort_order');
     }
 
+    public function firstImage()
+    {
+        return $this->hasOne(MachineImage::class)->orderBy('sort_order');
+    }
+
     public function featuredImage()
     {
         return $this->hasOne(MachineImage::class)->where('is_featured', true);
     }
 }
-

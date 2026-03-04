@@ -13,6 +13,8 @@ use Illuminate\Validation\Rule;
 class MachineController extends Controller
 {
     private const STATUS = ['available', 'reserved', 'sold', 'inactive'];
+    private const MAX_IMAGE_UPLOAD_FILES = 8;
+    private const MAX_IMAGE_UPLOAD_SIZE_KB = 5120;
 
     public function index(Request $request)
     {
@@ -21,10 +23,13 @@ class MachineController extends Controller
         $status = (string) $request->get('status', '');
 
         $machines = Machine::query()
-            ->with(['category', 'images'])
+            ->with([
+                'category:id,name',
+                'firstImage:id,machine_id,path,sort_order',
+            ])
             ->when($q !== '', function ($query) use ($q) {
-                $query->where(function ($sub) use ($q) {
-                    $sub->where('name', 'like', "%{$q}%")
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
                         ->orWhere('brand', 'like', "%{$q}%")
                         ->orWhere('model', 'like', "%{$q}%");
                 });
@@ -52,22 +57,7 @@ class MachineController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'brand' => ['nullable', 'string', 'max:255'],
-            'model' => ['nullable', 'string', 'max:255'],
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', Rule::in(self::STATUS)],
-            'description' => ['nullable', 'string'],
-            'featured' => ['nullable', 'boolean'],
-            'negotiable' => ['nullable', 'boolean'],
-            'images' => ['nullable', 'array'],
-            'images.*' => ['file', 'image', 'max:16144'],
-        ]);
-
-        $data['featured'] = $request->boolean('featured');
-        $data['negotiable'] = $request->boolean('negotiable');
+        $data = $this->validateMachineData($request);
 
         $machine = Machine::create($data);
 
@@ -94,22 +84,7 @@ class MachineController extends Controller
 
     public function update(Request $request, Machine $machine)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'brand' => ['nullable', 'string', 'max:255'],
-            'model' => ['nullable', 'string', 'max:255'],
-            'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', Rule::in(self::STATUS)],
-            'description' => ['nullable', 'string'],
-            'featured' => ['nullable', 'boolean'],
-            'negotiable' => ['nullable', 'boolean'],
-            'images' => ['nullable', 'array'],
-            'images.*' => ['file', 'image', 'max:16144'],
-        ]);
-
-        $data['featured'] = $request->boolean('featured');
-        $data['negotiable'] = $request->boolean('negotiable');
+        $data = $this->validateMachineData($request);
 
         $machine->update($data);
 
@@ -131,19 +106,6 @@ class MachineController extends Controller
         return redirect()->route('admin.machines.index')->with('success', 'Máquina removida com sucesso.');
     }
 
-    public function destroyImage(Machine $machine, MachineImage $image)
-    {
-        if ((int) $image->machine_id !== (int) $machine->id) {
-            abort(404);
-        }
-
-        $this->deleteImageFile($image);
-
-        $image->delete();
-
-        return back()->with('success', 'Imagem removida com sucesso.');
-    }
-
     public function updateStatus(Request $request, Machine $machine)
     {
         $data = $request->validate([
@@ -160,7 +122,9 @@ class MachineController extends Controller
     private function storeImages(Machine $machine, Request $request): void
     {
         $files = $request->file('images', []);
-        if (!is_array($files) || count($files) === 0) return;
+        if (!is_array($files) || count($files) === 0) {
+            return;
+        }
 
         $machine->loadMissing('images');
 
@@ -178,6 +142,28 @@ class MachineController extends Controller
 
             $nextSort++;
         }
+    }
+
+    private function validateMachineData(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['required', Rule::in(self::STATUS)],
+            'description' => ['nullable', 'string'],
+            'featured' => ['nullable', 'boolean'],
+            'negotiable' => ['nullable', 'boolean'],
+            'images' => ['nullable', 'array', 'max:' . self::MAX_IMAGE_UPLOAD_FILES],
+            'images.*' => ['file', 'image', 'max:' . self::MAX_IMAGE_UPLOAD_SIZE_KB],
+        ]);
+
+        $data['featured'] = $request->boolean('featured');
+        $data['negotiable'] = $request->boolean('negotiable');
+
+        return $data;
     }
 
     private function deleteImageFile(MachineImage $image): void

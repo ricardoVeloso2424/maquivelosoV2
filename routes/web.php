@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 use App\Http\Controllers\ProfileController;
 
@@ -9,6 +11,7 @@ use App\Http\Controllers\Site\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MachineController;
 use App\Http\Controllers\Admin\MachineImageController;
+use App\Models\Machine;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SettingsController;
 
@@ -17,7 +20,25 @@ use App\Http\Controllers\Admin\SettingsController;
 | Site público
 |--------------------------------------------------------------------------
 */
-Route::get('/', fn () => view('site.home'))->name('site.home');
+Route::get('/', function () {
+    $featuredMachines = collect();
+
+    try {
+        if (Schema::hasTable('machines')) {
+            $featuredMachines = Machine::query()
+                ->with(['firstImage:id,machine_id,path,sort_order'])
+                ->where('featured', true)
+                ->where('status', 'available')
+                ->latest()
+                ->limit(6)
+                ->get();
+        }
+    } catch (\Throwable) {
+        $featuredMachines = collect();
+    }
+
+    return view('site.home', compact('featuredMachines'));
+})->name('site.home');
 
 // Catálogo (lista)
 Route::get('/catalogo', [CatalogController::class, 'index'])->name('site.catalog');
@@ -32,8 +53,12 @@ Route::get('/contacto', fn () => view('site.contact'))->name('site.contact');
 | “Dashboard” default do Breeze -> redireciona para o admin
 |--------------------------------------------------------------------------
 */
-Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))
-    ->middleware(['auth', 'verified'])
+Route::get('/dashboard', function (Request $request) {
+    return $request->user()->is_admin
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('site.home');
+})
+    ->middleware(['auth'])
     ->name('dashboard');
 
 /*
@@ -52,7 +77,7 @@ Route::middleware('auth')->group(function () {
 | Backoffice
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])
+Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->as('admin.')
     ->scopeBindings()
