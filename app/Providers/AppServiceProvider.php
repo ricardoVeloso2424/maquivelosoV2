@@ -11,7 +11,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        View::composer(['layouts.site', 'site.contact'], function ($view) {
+        View::composer(['layouts.site', 'site.*'], function ($view) {
             $defaults = [
                 'business_name' => 'MaquiVeloso',
                 'phone' => '',
