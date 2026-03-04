@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
 | Backoffice
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])
+Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->as('admin.')
     ->scopeBindings()
