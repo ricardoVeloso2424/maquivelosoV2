@@ -44,8 +44,8 @@ class AdminMachineUploadValidationTest extends TestCase
 
     private function adminUser(): User
     {
-        return User::factory()->create([
+        return User::allowAdminPromotion(fn () => User::factory()->create([
             'is_admin' => true,
-        ]);
+        ]));
     }
 }

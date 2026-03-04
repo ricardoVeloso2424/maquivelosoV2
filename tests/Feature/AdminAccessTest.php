@@ -21,7 +21,7 @@ class AdminAccessTest extends TestCase
 
     public function test_admin_can_access_admin_dashboard(): void
     {
-        $user = User::factory()->create(['is_admin' => true]);
+        $user = $this->adminUser();
 
         $this->actingAs($user)
             ->get('/admin')
@@ -30,7 +30,7 @@ class AdminAccessTest extends TestCase
 
     public function test_dashboard_redirects_admin_users_to_admin_area(): void
     {
-        $user = User::factory()->create(['is_admin' => true]);
+        $user = $this->adminUser();
 
         $this->actingAs($user)
             ->get('/dashboard')
@@ -44,5 +44,12 @@ class AdminAccessTest extends TestCase
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertRedirect('/');
+    }
+
+    private function adminUser(): User
+    {
+        return User::allowAdminPromotion(fn () => User::factory()->create([
+            'is_admin' => true,
+        ]));
     }
 }
