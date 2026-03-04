@@ -104,7 +104,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse(($machines ?? []) as $machine)
             @php
-                $firstImg = $machine->images->first() ?? null;
+                $firstImg = $machine->firstImage ?? null;
                 $imgUrl = $imgUrlFrom($firstImg);
 
                 $name = $machine->name ?? '—';

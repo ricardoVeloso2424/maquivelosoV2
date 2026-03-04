@@ -11,30 +11,30 @@ class CatalogController extends Controller
     public function index(Request $request)
     {
         $q = trim($request->get('q', ''));
-        $category = $request->get('category');
-        $price = $request->get('price'); 
+        $category = (string) $request->get('category', '');
+        $price = trim((string) $request->get('price', ''));
+        $maxPrice = $this->parsePriceFilter($price);
 
         $machines = Machine::query()
             ->with([
                 'category:id,name',
-                // carrega só a primeira imagem 
-                'images' => fn($q) => $q->select('id','machine_id','path')->orderBy('sort_order')->limit(1),
+                'firstImage:id,machine_id,path,sort_order',
             ])
-            ->where('status', 'available') // só disponíveis
+            ->where('status', 'available')
             ->when($q, fn($qq) => $qq->where('name', 'like', "%{$q}%"))
             ->when($category, fn($qq) => $qq->where('category_id', $category))
+            ->when($maxPrice !== null, fn ($qq) => $qq->whereNotNull('price')->where('price', '<=', $maxPrice))
             ->latest()
             ->paginate(12);
 
-        $categories = \App\Models\Category::query()->orderBy('name')->get(['id','name']);
+        $categories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name']);
 
         return view('site.catalog', compact('machines', 'categories', 'q', 'category', 'price'));
     }
 
     public function show(Machine $machine)
     {
-
-        // abort_if($machine->status !== 'available', 404);
+        abort_if($machine->status !== 'available', 404);
 
         $machine->load([
             'category:id,name',
@@ -42,5 +42,21 @@ class CatalogController extends Controller
         ]);
 
         return view('site.machine-show', compact('machine'));
+    }
+
+    private function parsePriceFilter(string $value): ?float
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        $normalized = str_replace([' ', '€'], '', $value);
+        $normalized = str_replace(',', '.', $normalized);
+
+        if (!preg_match('/^\d+(\.\d{1,2})?$/', $normalized)) {
+            return null;
+        }
+
+        return (float) $normalized;
     }
 }

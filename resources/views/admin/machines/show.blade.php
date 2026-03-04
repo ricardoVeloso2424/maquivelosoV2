@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $statusLabels = [
+        'available' => 'Disponível',
+        'reserved' => 'Reservada',
+        'sold' => 'Vendida',
+        'inactive' => 'Indisponível',
+    ];
+@endphp
+
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="flex items-start justify-between gap-4 mb-6">
         <div>
@@ -44,7 +53,7 @@
             </div>
             <div>
                 <div class="text-xs font-semibold text-gray-500">Estado</div>
-                <div class="text-sm text-gray-900">{{ $machine->status === 'active' ? 'Ativa' : 'Inativa' }}</div>
+                <div class="text-sm text-gray-900">{{ $statusLabels[$machine->status] ?? ucfirst((string) $machine->status) }}</div>
             </div>
         </div>
 
