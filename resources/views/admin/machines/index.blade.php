@@ -133,9 +133,7 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse(($machines ?? []) as $machine)
                     @php
-                        $img = null;
-                        if (isset($machine->images) && $machine->images?->count()) $img = $machine->images->first();
-                        if (!$img && isset($machine->machineImages) && $machine->machineImages?->count()) $img = $machine->machineImages->first();
+                        $img = $machine->firstImage;
 
                         $imgUrl = null;
                         if ($img) {
