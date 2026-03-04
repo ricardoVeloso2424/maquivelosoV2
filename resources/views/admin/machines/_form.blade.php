@@ -45,7 +45,6 @@
 
     if (isset($machine) && $machine) {
         if (isset($machine->images) && $machine->images) $existingImages = $existingImages->merge($machine->images);
-        if (isset($machine->machineImages) && $machine->machineImages) $existingImages = $existingImages->merge($machine->machineImages);
     }
 
     $existingImages = $existingImages
@@ -142,7 +141,7 @@
             <div class="text-xs text-gray-500 leading-relaxed pt-1">
                 Podes selecionar várias imagens (Ctrl).
                 <br>
-                Máx: 15MB por imagem.
+                Máx: 8 imagens, 5MB por imagem.
             </div>
         </div>
     </div>
