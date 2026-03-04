@@ -17,6 +17,9 @@
     if (!$main && $images->count()) $main = $images->first();
 
     $mainUrl = $main?->public_url;
+    $whatsappMachineName = trim((string) ($machine->name ?? 'máquina'));
+    $whatsappMachineMessage = rawurlencode("Olá! Tenho interesse na máquina {$whatsappMachineName}. Pode dar mais informações?");
+    $whatsappMachineUrl = "https://wa.me/351960125103?text={$whatsappMachineMessage}";
 @endphp
 
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -132,9 +135,14 @@
                    class="mt-4 inline-flex items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
                     Ir para contacto
                 </a>
+                <a href="{{ $whatsappMachineUrl }}"
+                   target="_blank"
+                   rel="noopener"
+                   class="mt-3 inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+                    Contactar no WhatsApp
+                </a>
             </div>
         </div>
     </div>
 </div>
 @endsection
-

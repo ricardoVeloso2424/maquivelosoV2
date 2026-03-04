@@ -24,6 +24,7 @@
     }
 
     $hasContactLines = $contactPhone !== '' || $contactEmail !== '' || $contactAddress !== '' || $whatsappHref !== '' || $contactHours !== '';
+    $whatsappButtonUrl = 'https://wa.me/351960125103?text=Ol%C3%A1%21%20Vi%20o%20site%20Maquiveloso%20e%20queria%20mais%20informa%C3%A7%C3%B5es.';
 @endphp
 
 <section class="max-w-3xl mx-auto px-6 py-16">
@@ -79,6 +80,15 @@
                 @endif
             </div>
         @endif
+
+        <a
+            href="{{ $whatsappButtonUrl }}"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+        >
+            Falar no WhatsApp
+        </a>
 
         <a href="{{ route('site.home') }}" class="inline-flex px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">
             Voltar ao início
