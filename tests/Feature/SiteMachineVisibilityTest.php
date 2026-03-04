@@ -57,4 +57,19 @@ class SiteMachineVisibilityTest extends TestCase
             ->assertSee('Machine Beta')
             ->assertDontSee('Machine Gamma Sold');
     }
+
+    public function test_catalog_price_filter_accepts_localized_numeric_formats(): void
+    {
+        Machine::create(['name' => 'Machine Localized Cheap', 'status' => 'available', 'price' => 1000]);
+        Machine::create(['name' => 'Machine Localized Expensive', 'status' => 'available', 'price' => 1500]);
+
+        $filters = ['1.200,00', '1200,00', '1 200,00', '1200.00'];
+
+        foreach ($filters as $filter) {
+            $this->get('/catalogo?price=' . urlencode($filter))
+                ->assertOk()
+                ->assertSee('Machine Localized Cheap')
+                ->assertDontSee('Machine Localized Expensive');
+        }
+    }
 }
