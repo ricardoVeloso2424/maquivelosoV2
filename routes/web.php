@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 use App\Http\Controllers\ProfileController;
 
@@ -32,8 +33,12 @@ Route::get('/contacto', fn () => view('site.contact'))->name('site.contact');
 | “Dashboard” default do Breeze -> redireciona para o admin
 |--------------------------------------------------------------------------
 */
-Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))
-    ->middleware(['auth', 'verified'])
+Route::get('/dashboard', function (Request $request) {
+    return $request->user()->is_admin
+        ? redirect()->route('admin.dashboard')
+        : redirect()->route('site.home');
+})
+    ->middleware(['auth'])
     ->name('dashboard');
 
 /*
@@ -52,7 +57,7 @@ Route::middleware('auth')->group(function () {
 | Backoffice
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'admin'])
+Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->as('admin.')
     ->scopeBindings()

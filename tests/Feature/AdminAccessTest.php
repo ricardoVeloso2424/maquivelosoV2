@@ -28,12 +28,21 @@ class AdminAccessTest extends TestCase
             ->assertOk();
     }
 
-    public function test_unverified_admin_is_redirected_to_verification_notice(): void
+    public function test_dashboard_redirects_admin_users_to_admin_area(): void
     {
-        $user = User::factory()->unverified()->create(['is_admin' => true]);
+        $user = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($user)
-            ->get('/admin')
-            ->assertRedirect(route('verification.notice', absolute: false));
+            ->get('/dashboard')
+            ->assertRedirect('/admin');
+    }
+
+    public function test_dashboard_redirects_non_admin_users_to_home(): void
+    {
+        $user = User::factory()->create(['is_admin' => false]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertRedirect('/');
     }
 }
