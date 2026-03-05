@@ -11,17 +11,9 @@
     $phoneHref = preg_replace('/[^\d+]/', '', $contactPhone);
     $phoneHref = is_string($phoneHref) ? $phoneHref : '';
 
-    $whatsappHref = '';
-    if ($contactWhatsapp !== '') {
-        if (str_starts_with($contactWhatsapp, 'http://') || str_starts_with($contactWhatsapp, 'https://')) {
-            $whatsappHref = $contactWhatsapp;
-        } else {
-            $digits = preg_replace('/\D+/', '', $contactWhatsapp);
-            if (is_string($digits) && $digits !== '') {
-                $whatsappHref = 'https://wa.me/' . $digits;
-            }
-        }
-    }
+    $whatsappDigits = preg_replace('/\D+/', '', $contactWhatsapp);
+    $whatsappDigits = is_string($whatsappDigits) ? $whatsappDigits : '';
+    $whatsappHref = $whatsappDigits !== '' ? 'https://wa.me/' . $whatsappDigits : '';
 
     $hasContactLines = $contactPhone !== '' || $contactEmail !== '' || $contactAddress !== '' || $whatsappHref !== '' || $contactHours !== '';
 @endphp
@@ -67,7 +59,7 @@
                     <p class="text-sm text-gray-700">
                         WhatsApp:
                         <a href="{{ $whatsappHref }}" target="_blank" rel="noopener" class="font-medium text-gray-900 hover:underline">
-                            {{ $contactWhatsapp }}
+                            {{ $whatsappDigits }}
                         </a>
                     </p>
                 @endif
@@ -79,6 +71,13 @@
                 @endif
             </div>
         @endif
+
+        <x-whatsapp-button
+            :number="$contactWhatsapp"
+            message="Olá! Vi o site Maquiveloso e queria mais informações."
+            label="Falar no WhatsApp"
+            class="inline-flex px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+        />
 
         <a href="{{ route('site.home') }}" class="inline-flex px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">
             Voltar ao início

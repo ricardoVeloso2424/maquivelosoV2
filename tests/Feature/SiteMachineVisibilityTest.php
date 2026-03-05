@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Machine;
+use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -143,5 +144,32 @@ class SiteMachineVisibilityTest extends TestCase
             ->assertSee('Homepage Featured')
             ->assertDontSee('Homepage Not Featured')
             ->assertDontSee('Homepage Featured Sold');
+    }
+
+    public function test_machine_page_renders_whatsapp_cta_when_contact_setting_exists(): void
+    {
+        $machine = Machine::create([
+            'name' => 'Singer 4423',
+            'status' => 'available',
+        ]);
+        Setting::set('contact_whatsapp', '351960125103');
+        $message = rawurlencode('Olá! Tenho interesse na máquina Singer 4423. Pode dar mais informações?');
+
+        $this->get(route('site.machine.show', $machine))
+            ->assertOk()
+            ->assertSee('Contactar no WhatsApp')
+            ->assertSee('href="https://wa.me/351960125103?text=' . $message . '"', false);
+    }
+
+    public function test_machine_page_hides_whatsapp_cta_when_contact_setting_is_missing(): void
+    {
+        $machine = Machine::create([
+            'name' => 'Singer 5523',
+            'status' => 'available',
+        ]);
+
+        $this->get(route('site.machine.show', $machine))
+            ->assertOk()
+            ->assertDontSee('Contactar no WhatsApp');
     }
 }
