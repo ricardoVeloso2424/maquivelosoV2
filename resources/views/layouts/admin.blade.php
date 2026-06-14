@@ -100,6 +100,7 @@
 
         <main class="flex-1 relative z-10">
             <div class="max-w-6xl mx-auto px-10 py-10">
+                @include('admin.partials.flash')
                 @yield('content')
             </div>
         </main>

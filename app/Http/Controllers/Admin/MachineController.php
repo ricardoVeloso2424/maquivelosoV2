@@ -12,9 +12,9 @@ use Illuminate\Validation\Rule;
 
 class MachineController extends Controller
 {
-    private const STATUS = ['available', 'reserved', 'sold', 'inactive'];
     private const MAX_IMAGE_UPLOAD_FILES = 8;
     private const MAX_IMAGE_UPLOAD_SIZE_KB = 5120;
+    private const THUMB_MAX_WIDTH = 600;
 
     public function index(Request $request)
     {
@@ -25,7 +25,8 @@ class MachineController extends Controller
         $machines = Machine::query()
             ->with([
                 'category:id,name',
-                'firstImage:id,machine_id,path,sort_order',
+                'firstImage:id,machine_id,path,thumb_path,sort_order',
+                'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
             ])
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
@@ -98,7 +99,7 @@ class MachineController extends Controller
         $machine->load('images');
 
         foreach ($machine->images as $img) {
-            $this->deleteImageFile($img);
+            $this->deleteImageFiles($img);
         }
 
         $machine->delete();
@@ -109,7 +110,7 @@ class MachineController extends Controller
     public function updateStatus(Request $request, Machine $machine)
     {
         $data = $request->validate([
-            'status' => ['required', Rule::in(self::STATUS)],
+            'status' => ['required', Rule::in($this->statusKeys())],
         ]);
 
         $machine->update([
@@ -137,6 +138,7 @@ class MachineController extends Controller
 
             $machine->images()->create([
                 'path' => $path,
+                'thumb_path' => $this->generateThumbnail($path),
                 'sort_order' => $nextSort,
             ]);
 
@@ -152,7 +154,7 @@ class MachineController extends Controller
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', Rule::in(self::STATUS)],
+            'status' => ['required', Rule::in($this->statusKeys())],
             'description' => ['nullable', 'string'],
             'featured' => ['nullable', 'boolean'],
             'negotiable' => ['nullable', 'boolean'],
@@ -166,11 +168,102 @@ class MachineController extends Controller
         return $data;
     }
 
-    private function deleteImageFile(MachineImage $image): void
+    /**
+     * Chaves de estado válidas, a partir de config/machines.php.
+     *
+     * @return array<int, string>
+     */
+    private function statusKeys(): array
     {
-        $path = (string) ($image->path ?? '');
-        if ($path !== '' && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        return array_keys((array) config('machines.statuses', []));
+    }
+
+    /**
+     * Apaga o ficheiro original e a respetiva miniatura (se existirem).
+     */
+    private function deleteImageFiles(MachineImage $image): void
+    {
+        $disk = Storage::disk('public');
+
+        foreach ([$image->path, $image->thumb_path] as $path) {
+            $path = (string) ($path ?? '');
+            if ($path !== '' && $disk->exists($path)) {
+                $disk->delete($path);
+            }
         }
+    }
+
+    /**
+     * Gera uma miniatura redimensionada (máx. THUMB_MAX_WIDTH de largura) usando
+     * a extensão GD nativa do PHP. Devolve o caminho da miniatura ou null quando:
+     *  - a extensão GD não está disponível;
+     *  - o ficheiro não é uma imagem válida/suportada;
+     *  - a imagem já é mais pequena do que a largura máxima (usa-se o original).
+     *
+     * Quando devolve null, o accessor thumb_url faz fallback para o original,
+     * por isso nunca há páginas sem imagem por causa disto.
+     */
+    private function generateThumbnail(string $originalPath): ?string
+    {
+        if (!extension_loaded('gd')) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+
+        if (!$disk->exists($originalPath)) {
+            return null;
+        }
+
+        $fullPath = $disk->path($originalPath);
+
+        $info = @getimagesize($fullPath);
+        if ($info === false) {
+            return null;
+        }
+
+        [$width, $height] = $info;
+        $type = $info[2] ?? null;
+
+        if (!$width || !$height || $width <= self::THUMB_MAX_WIDTH) {
+            return null;
+        }
+
+        $source = match ($type) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($fullPath),
+            IMAGETYPE_PNG => @imagecreatefrompng($fullPath),
+            IMAGETYPE_GIF => @imagecreatefromgif($fullPath),
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($fullPath) : false,
+            default => false,
+        };
+
+        if (!$source) {
+            return null;
+        }
+
+        $newWidth = self::THUMB_MAX_WIDTH;
+        $newHeight = (int) round($height * ($newWidth / $width));
+
+        $thumb = imagecreatetruecolor($newWidth, $newHeight);
+        // Fundo branco para achatar transparências (miniaturas saem como JPEG).
+        $white = imagecolorallocate($thumb, 255, 255, 255);
+        imagefilledrectangle($thumb, 0, 0, $newWidth, $newHeight, $white);
+        imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+        ob_start();
+        imagejpeg($thumb, null, 80);
+        $contents = ob_get_clean();
+
+        imagedestroy($source);
+        imagedestroy($thumb);
+
+        if ($contents === false || $contents === '') {
+            return null;
+        }
+
+        $thumbPath = 'machines/thumbs/' . pathinfo($originalPath, PATHINFO_FILENAME) . '.jpg';
+        $disk->put($thumbPath, $contents);
+
+        return $thumbPath;
     }
 }

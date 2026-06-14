@@ -26,7 +26,10 @@ Route::get('/', function () {
     try {
         if (Schema::hasTable('machines')) {
             $featuredMachines = Machine::query()
-                ->with(['firstImage:id,machine_id,path,sort_order'])
+                ->with([
+                    'firstImage:id,machine_id,path,thumb_path,sort_order',
+                    'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
+                ])
                 ->where('featured', true)
                 ->where('status', 'available')
                 ->latest()
@@ -92,6 +95,9 @@ Route::middleware(['auth', 'admin'])
 
         Route::delete('machines/{machine}/images/{image}', [MachineImageController::class, 'destroy'])
             ->name('machines.images.destroy');
+
+        Route::patch('machines/{machine}/images/{image}/feature', [MachineImageController::class, 'feature'])
+            ->name('machines.images.feature');
 
         Route::resource('categories', CategoryController::class)
             ->only(['index', 'store', 'update', 'destroy']);

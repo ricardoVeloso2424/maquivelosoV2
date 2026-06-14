@@ -2,11 +2,6 @@
 
 @section('content')
 @php
-    $money = function ($value) {
-        if ($value === null || $value === '') return null;
-        return number_format((float)$value, 0, ',', '.') . ' €';
-    };
-
     $q        = $q        ?? request('q', '');
     $category = $category ?? request('category', '');
     $priceMin = $priceMin ?? request('price_min', '');
@@ -19,53 +14,47 @@
     }
 @endphp
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<div class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
+        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Catálogo</h1>
+                <p class="mt-1 text-sm text-slate-600">Encontre máquinas disponíveis para compra imediata.</p>
+            </div>
+            <div class="text-sm text-slate-500">
+                @if(isset($machines))
+                    {{ method_exists($machines, 'total') ? $machines->total() : $machines->count() }} resultado(s)
+                @endif
+            </div>
+        </div>
 
-    <div class="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
         <form method="GET" action="{{ route('site.catalog') }}" class="space-y-4">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <div class="lg:col-span-4">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Pesquisar</label>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                <div class="lg:col-span-5">
+                    <label for="catalog_search" class="mb-2 block text-sm font-medium text-slate-900">Pesquisar</label>
                     <div class="relative">
-                        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <circle cx="11" cy="11" r="7"></circle>
                                 <path d="M21 21l-4.3-4.3"></path>
                             </svg>
                         </span>
                         <input
+                            id="catalog_search"
                             name="q"
                             value="{{ $q }}"
-                            placeholder="Nome..."
-                            class="w-full rounded-xl border-gray-200 bg-white py-3 pl-12 pr-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                            placeholder="Nome da máquina"
+                            class="w-full rounded-xl border-slate-300 py-3 pl-12 pr-4 text-sm text-slate-900 focus:border-slate-900 focus:ring-slate-900"
                         />
                     </div>
                 </div>
 
-                <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Ordenar</label>
-                    @php
-                        $sortOption = $sort === 'price'
-                            ? ($dir === 'desc' ? 'price_desc' : 'price_asc')
-                            : 'name_asc';
-                    @endphp
+                <div class="lg:col-span-3">
+                    <label for="catalog_category" class="mb-2 block text-sm font-medium text-slate-900">Categoria</label>
                     <select
-                        id="sort_option"
-                        class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                    >
-                        <option value="name_asc" @selected($sortOption === 'name_asc')>Nome (A–Z)</option>
-                        <option value="price_asc" @selected($sortOption === 'price_asc')>Preço: mais barato</option>
-                        <option value="price_desc" @selected($sortOption === 'price_desc')>Preço: mais caro</option>
-                    </select>
-                    <input type="hidden" name="sort" id="sort_field" value="{{ $sort }}">
-                    <input type="hidden" name="dir" id="dir_field" value="{{ $dir }}">
-                </div>
-
-                <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Categoria</label>
-                    <select
+                        id="catalog_category"
                         name="category"
-                        class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                        class="w-full rounded-xl border-slate-300 py-3 text-sm text-slate-900 focus:border-slate-900 focus:ring-slate-900"
                     >
                         <option value="">Todas</option>
                         @foreach(($categories ?? []) as $cat)
@@ -74,109 +63,127 @@
                     </select>
                 </div>
 
-                <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço mínimo</label>
-                    <input
-                        name="price_min"
-                        value="{{ $priceMin }}"
-                        placeholder="Ex.: 500"
-                        class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                    />
-                </div>
-
-                <div class="lg:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 mb-2">Preço máximo</label>
-                    <input
-                        name="price_max"
-                        value="{{ $priceMax }}"
-                        placeholder="Ex.: 1200"
-                        class="w-full rounded-xl border-gray-200 bg-white py-3 px-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-                    />
+                <div class="lg:col-span-4">
+                    <label for="sort_option" class="mb-2 block text-sm font-medium text-slate-900">Ordenar</label>
+                    @php
+                        $sortOption = $sort === 'price'
+                            ? ($dir === 'desc' ? 'price_desc' : 'price_asc')
+                            : 'name_asc';
+                    @endphp
+                    <select
+                        id="sort_option"
+                        class="w-full rounded-xl border-slate-300 py-3 text-sm text-slate-900 focus:border-slate-900 focus:ring-slate-900"
+                    >
+                        <option value="name_asc" @selected($sortOption === 'name_asc')>Nome (A-Z)</option>
+                        <option value="price_asc" @selected($sortOption === 'price_asc')>Preço: mais barato</option>
+                        <option value="price_desc" @selected($sortOption === 'price_desc')>Preço: mais caro</option>
+                    </select>
+                    <input type="hidden" name="sort" id="sort_field" value="{{ $sort }}">
+                    <input type="hidden" name="dir" id="dir_field" value="{{ $dir }}">
                 </div>
             </div>
 
-            <div class="flex items-center justify-between gap-4">
-                <div class="text-sm text-gray-500">
-                    @if(isset($machines))
-                        {{ method_exists($machines, 'total') ? $machines->total() : $machines->count() }} resultado(s)
-                    @endif
-                </div>
+            <details class="rounded-xl border border-slate-200 bg-slate-50/80" @if($priceMin !== '' || $priceMax !== '') open @endif>
+                <summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-slate-700">
+                    Mais filtros
+                </summary>
+                <div class="grid grid-cols-1 gap-4 px-4 pb-4 sm:grid-cols-2">
+                    <div>
+                        <label for="catalog_price_min" class="mb-2 block text-sm font-medium text-slate-900">Preço mínimo</label>
+                        <input
+                            id="catalog_price_min"
+                            name="price_min"
+                            value="{{ $priceMin }}"
+                            placeholder="Ex.: 500"
+                            class="w-full rounded-xl border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:ring-slate-900"
+                        />
+                    </div>
 
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('site.catalog') }}" class="text-sm font-semibold text-gray-600 hover:text-gray-900">
-                        Limpar
-                    </a>
-                    <button class="rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-                        Filtrar
-                    </button>
+                    <div>
+                        <label for="catalog_price_max" class="mb-2 block text-sm font-medium text-slate-900">Preço máximo</label>
+                        <input
+                            id="catalog_price_max"
+                            name="price_max"
+                            value="{{ $priceMax }}"
+                            placeholder="Ex.: 1200"
+                            class="w-full rounded-xl border-slate-300 px-4 py-3 text-sm text-slate-900 focus:border-slate-900 focus:ring-slate-900"
+                        />
+                    </div>
                 </div>
+            </details>
+
+            <div class="flex flex-wrap items-center justify-end gap-3">
+                <a href="{{ route('site.catalog') }}"
+                   class="rounded text-sm font-medium text-slate-600 transition hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                    Limpar filtros
+                </a>
+                <button class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                    Aplicar filtros
+                </button>
             </div>
         </form>
-    </div>
+    </section>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         @forelse(($machines ?? []) as $machine)
             @php
-                $firstImg = $machine->firstImage ?? null;
-                $imgUrl = $firstImg?->public_url;
+                $imgUrl = $machine->main_image?->thumb_url;
 
                 $name = $machine->name ?? '—';
 
-                $priceText = $money($machine->price);
-                $isNegotiable = (bool)($machine->negotiable ?? false);
+                $priceText = $machine->price_formatted;
+                $state = $machine->priceState();
 
-                $showPrice = (bool)$priceText;
-                $showNegotiable = $isNegotiable;
-
-                $showSobConsulta = !$showPrice && !$showNegotiable;
+                $showNegotiable = in_array($state, ['price_negotiable', 'negotiable'], true);
             @endphp
 
             <a href="{{ route('site.machine.show', $machine) }}"
-               class="group rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition overflow-hidden">
-                <div class="aspect-[4/3] bg-gray-100 overflow-hidden">
+               class="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                <div class="relative aspect-[5/4] overflow-hidden bg-slate-100">
                     @if($imgUrl)
-                        <img src="{{ $imgUrl }}" alt="{{ $name }}" class="h-full w-full object-cover group-hover:scale-[1.02] transition">
+                        <img src="{{ $imgUrl }}" alt="{{ $name }}" width="500" height="400" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]">
                     @else
-                        <div class="h-full w-full flex items-center justify-center text-gray-400">
-                            <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <div class="flex h-full w-full items-center justify-center text-slate-400">
+                            <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                 <path d="M3 16l5-5 4 4 3-3 6 6"></path>
                                 <path d="M14 8h.01"></path>
                             </svg>
                         </div>
                     @endif
+
+                    @if($showNegotiable)
+                        <span class="absolute left-3 top-3 inline-flex items-center rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white">
+                            Negociável
+                        </span>
+                    @endif
                 </div>
 
                 <div class="p-5">
-                    <div class="font-semibold text-gray-900 truncate">{{ $name }}</div>
+                    <h2 class="line-clamp-1 text-lg font-semibold text-slate-900">{{ $name }}</h2>
 
-                    <div class="mt-1 text-sm">
-                        @if($showSobConsulta)
-                            <span class="text-gray-500">Sob consulta</span>
+                    <div class="mt-2 min-h-[2.2rem]">
+                        @if($state === 'on_request')
+                            <p class="text-sm font-medium text-slate-500">Sob consulta</p>
+                        @elseif($state === 'negotiable')
+                            <p class="text-sm font-medium text-emerald-700">Preço negociável</p>
                         @else
-                            <div class="flex flex-wrap items-center gap-2">
-                                @if($showPrice)
-                                    <span class="font-semibold text-gray-900">{{ $priceText }}</span>
-                                @endif
-
-                                @if($showNegotiable)
-                                    <span class="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                                        Negociável
-                                    </span>
-                                @endif
-                            </div>
+                            <p class="text-2xl font-bold tracking-tight text-slate-900">{{ $priceText }}</p>
                         @endif
                     </div>
-
-                    <div class="mt-4 text-xs text-gray-500">Ver detalhes</div>
                 </div>
             </a>
         @empty
-            <div class="col-span-full rounded-2xl border border-gray-100 bg-white p-10 text-center text-gray-600">
-                Não há máquinas disponíveis.
+            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                <h2 class="text-lg font-semibold text-slate-900">Nenhuma máquina encontrada</h2>
+                <p class="mt-2 text-sm text-slate-600">Ajuste os filtros ou limpe a pesquisa para ver mais resultados.</p>
+                <a href="{{ route('site.catalog') }}"
+                   class="mt-4 inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                    Ver todas as máquinas
+                </a>
             </div>
         @endforelse
-    </div>
+    </section>
 
     @if(isset($machines) && method_exists($machines, 'links'))
         <div class="pt-2">

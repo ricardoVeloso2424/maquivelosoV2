@@ -8,12 +8,7 @@
     $category = request('category', '');
     $status   = request('status', '');
 
-    $statusLabels = [
-        'available' => 'Disponível',
-        'reserved'  => 'Reservada',
-        'sold'      => 'Vendida',
-        'inactive'  => 'Indisponível',
-    ];
+    $statusLabels = config('machines.statuses');
 
     $badgeClass = function (?string $s) {
         return match ($s) {
@@ -131,16 +126,14 @@
             <tbody class="divide-y divide-gray-100">
                 @forelse(($machines ?? []) as $machine)
                     @php
-                        $img = $machine->firstImage;
+                        $imgUrl = $machine->main_image?->thumb_url;
 
-                        $imgUrl = $img?->public_url;
-
-                        $mName       = $machine->name ?? $machine->nome ?? '—';
-                        $mCategory   = $machine->category->name ?? $machine->category->nome ?? '—';
-                        $mPrice      = $machine->price ?? $machine->preco ?? null;
-                        $mStatus     = $machine->status ?? $machine->estado ?? null;
-                        $mNegotiable = (bool)($machine->negotiable ?? false);
-                        $createdAt   = $machine->created_at ?? null;
+                        $mName       = $machine->name ?? '—';
+                        $mCategory   = $machine->category->name ?? '—';
+                        $mPrice      = $machine->price_formatted;
+                        $mStatus     = $machine->status;
+                        $mNegotiable = (bool) $machine->negotiable;
+                        $createdAt   = $machine->created_at;
 
                         $updateStatusUrl = route('admin.machines.updateStatus', $machine);
                     @endphp
@@ -149,7 +142,7 @@
                         <td class="px-6 py-4">
                             <div class="h-14 w-14 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-200">
                                 @if($imgUrl)
-                                    <img src="{{ $imgUrl }}" alt="" class="h-full w-full object-cover">
+                                    <img src="{{ $imgUrl }}" alt="" width="56" height="56" loading="lazy" decoding="async" class="h-full w-full object-cover">
                                 @else
                                     <div class="h-full w-full flex items-center justify-center text-gray-400">
                                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -171,11 +164,7 @@
                         </td>
 
                         <td class="px-6 py-4 text-gray-800">
-                            @if($mPrice === null || $mPrice === '')
-                                -
-                            @else
-                                {{ number_format((float)$mPrice, 0, ',', '.') }} €
-                            @endif
+                            {{ $mPrice ?? '-' }}
                         </td>
 
                         <td class="px-6 py-4">
@@ -183,7 +172,7 @@
                                 class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}"
                                 data-status-badge
                             >
-                                {{ $statusLabels[$mStatus] ?? ucfirst((string)$mStatus) }}
+                                {{ $machine->status_label }}
                             </span>
                         </td>
 
@@ -268,12 +257,7 @@
 (function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    const labelMap = {
-        available: 'Disponível',
-        reserved: 'Reservada',
-        sold: 'Vendida',
-        inactive: 'Indisponível',
-    };
+    const labelMap = @json(config('machines.statuses'));
 
     const classMap = {
         available: 'bg-green-100 text-green-700',

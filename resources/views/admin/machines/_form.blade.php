@@ -4,33 +4,10 @@
     $val = function ($key, $fallback = '') use ($machine) {
         if (!$machine) return old($key, $fallback);
 
-        $map = [
-            'name'        => ['name', 'nome'],
-            'description' => ['description', 'descricao'],
-            'category_id' => ['category_id', 'categoria_id'],
-            'price'       => ['price', 'preco'],
-            'status'      => ['status', 'estado'],
-            'featured'    => ['featured', 'destaque', 'is_featured'],
-            'negotiable'  => ['negotiable', 'negociable'],
-        ];
-
-        $candidates = $map[$key] ?? [$key];
-
-        foreach ($candidates as $cand) {
-            if (isset($machine->{$cand}) && $machine->{$cand} !== null) {
-                return old($key, $machine->{$cand});
-            }
-        }
-
-        return old($key, $fallback);
+        return old($key, $machine->{$key} ?? $fallback);
     };
 
-    $statusOptions = [
-        'available' => 'Disponível',
-        'reserved'  => 'Reservada',
-        'sold'      => 'Vendida',
-        'inactive'  => 'Indisponível',
-    ];
+    $statusOptions = config('machines.statuses');
 
     $selectedCategory = (string) $val('category_id', '');
     $selectedStatus   = (string) $val('status', 'available');
@@ -68,34 +45,63 @@
 @if($isEdit && $existingImages->count())
     <div class="mt-6">
         <div class="text-sm font-semibold text-gray-900">Imagens atuais</div>
+        <p class="mt-1 text-xs text-gray-500">
+            A imagem principal é a que aparece no catálogo, na página inicial e no topo do detalhe.
+            Se não escolheres nenhuma, é usada a primeira.
+        </p>
 
         <div class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-3">
             @foreach($existingImages as $img)
-                @php $u = $img->public_url; @endphp
+                @php
+                    $u = $img->thumb_url;
+                    $isMain = (bool) ($img->is_featured ?? false);
+                @endphp
 
-                <div class="relative h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100">
-                    @if($u)
-                        <img src="{{ $u }}" alt="" class="h-full w-full object-cover">
-                    @endif
+                <div class="flex flex-col items-center gap-1">
+                    <div class="relative h-20 w-20 overflow-hidden rounded-xl bg-gray-100 ring-1 {{ $isMain ? 'ring-2 ring-gray-900' : 'ring-gray-200' }}">
+                        @if($u)
+                            <img src="{{ $u }}" alt="" width="80" height="80" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        @endif
 
-                    @if(isset($img->id) && isset($machine->id))
+                        @if($isMain)
+                            <span class="absolute left-1 top-1 rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-semibold text-white">Principal</span>
+                        @endif
+
+                        @if(isset($img->id) && isset($machine->id))
+                            <form
+                                method="POST"
+                                action="{{ route('admin.machines.images.destroy', ['machine' => $machine->id, 'image' => $img->id]) }}"
+                                onsubmit="return confirm('Remover esta imagem?');"
+                                class="absolute top-1 right-1"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="submit"
+                                    class="h-7 w-7 rounded-lg bg-white/90 border border-gray-200 text-gray-700 hover:bg-white shadow-sm flex items-center justify-center"
+                                    title="Remover"
+                                >
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18"></path>
+                                        <path d="M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    @if(isset($img->id) && isset($machine->id) && !$isMain)
                         <form
                             method="POST"
-                            action="{{ route('admin.machines.images.destroy', ['machine' => $machine->id, 'image' => $img->id]) }}"
-                            onsubmit="return confirm('Remover esta imagem?');"
-                            class="absolute top-1 right-1"
+                            action="{{ route('admin.machines.images.feature', ['machine' => $machine->id, 'image' => $img->id]) }}"
                         >
                             @csrf
-                            @method('DELETE')
+                            @method('PATCH')
                             <button
                                 type="submit"
-                                class="h-7 w-7 rounded-lg bg-white/90 border border-gray-200 text-gray-700 hover:bg-white shadow-sm flex items-center justify-center"
-                                title="Remover"
+                                class="text-[11px] font-medium text-gray-500 underline-offset-2 hover:text-gray-900 hover:underline"
                             >
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 6L6 18"></path>
-                                    <path d="M6 6l12 12"></path>
-                                </svg>
+                                Tornar principal
                             </button>
                         </form>
                     @endif

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class MachineImage extends Model
 {
-    protected $fillable = ['machine_id', 'path', 'sort_order', 'is_featured'];
+    protected $fillable = ['machine_id', 'path', 'thumb_path', 'sort_order', 'is_featured'];
 
     protected $casts = [
         'is_featured' => 'boolean',
@@ -18,9 +18,29 @@ class MachineImage extends Model
         return $this->belongsTo(Machine::class);
     }
 
+    /**
+     * URL pública do ficheiro original (usada na página de detalhe).
+     */
     public function getPublicUrlAttribute(): ?string
     {
-        $path = (string) ($this->path ?? '');
+        return $this->urlFor($this->path);
+    }
+
+    /**
+     * URL da miniatura (usada em listagens: catálogo, home, backoffice).
+     * Faz fallback para o original quando não existe miniatura gerada.
+     */
+    public function getThumbUrlAttribute(): ?string
+    {
+        return $this->urlFor($this->thumb_path) ?? $this->public_url;
+    }
+
+    /**
+     * Normaliza um caminho de imagem para uma URL pública.
+     */
+    protected function urlFor(?string $path): ?string
+    {
+        $path = (string) ($path ?? '');
 
         if ($path === '') {
             return null;

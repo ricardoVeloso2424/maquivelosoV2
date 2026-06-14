@@ -45,7 +45,8 @@ class CatalogController extends Controller
         $machinesQuery = Machine::query()
             ->with([
                 'category:id,name',
-                'firstImage:id,machine_id,path,sort_order',
+                'firstImage:id,machine_id,path,thumb_path,sort_order',
+                'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
             ])
             ->where('status', 'available')
             ->when($q !== '', fn ($query) => $query->where('name', 'like', "%{$q}%"))
@@ -77,7 +78,7 @@ class CatalogController extends Controller
 
         $machine->load([
             'category:id,name',
-            'images:id,machine_id,path,sort_order',
+            'images:id,machine_id,path,thumb_path,sort_order,is_featured',
         ]);
 
         return view('site.machine-show', compact('machine'));

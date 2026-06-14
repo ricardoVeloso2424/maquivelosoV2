@@ -1,19 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Detalhes da Máquina')
 
 @section('content')
-@php
-    $statusLabels = [
-        'available' => 'Disponível',
-        'reserved' => 'Reservada',
-        'sold' => 'Vendida',
-        'inactive' => 'Indisponível',
-    ];
-@endphp
-
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-4xl">
     <div class="flex items-start justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">{{ $machine->name }}</h1>
+            <h1 class="text-3xl font-extrabold tracking-tight text-gray-900">{{ $machine->name }}</h1>
             <p class="text-sm text-gray-600">Detalhes da máquina.</p>
         </div>
 
@@ -35,8 +28,12 @@
         </div>
     </div>
 
-    <div class="rounded-lg border border-gray-200 bg-white p-6 space-y-4">
+    <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <div class="text-xs font-semibold text-gray-500">Categoria</div>
+                <div class="text-sm text-gray-900">{{ $machine->category->name ?? '—' }}</div>
+            </div>
             <div>
                 <div class="text-xs font-semibold text-gray-500">Marca</div>
                 <div class="text-sm text-gray-900">{{ $machine->brand ?? '—' }}</div>
@@ -47,13 +44,15 @@
             </div>
             <div>
                 <div class="text-xs font-semibold text-gray-500">Preço</div>
-                <div class="text-sm text-gray-900">
-                    {{ $machine->price !== null ? number_format((float)$machine->price, 2, ',', '.') . ' €' : '—' }}
-                </div>
+                <div class="text-sm text-gray-900">{{ $machine->price_formatted ?? '—' }}</div>
             </div>
             <div>
                 <div class="text-xs font-semibold text-gray-500">Estado</div>
-                <div class="text-sm text-gray-900">{{ $statusLabels[$machine->status] ?? ucfirst((string) $machine->status) }}</div>
+                <div class="text-sm text-gray-900">{{ $machine->status_label }}</div>
+            </div>
+            <div>
+                <div class="text-xs font-semibold text-gray-500">Negociável</div>
+                <div class="text-sm text-gray-900">{{ $machine->negotiable ? 'Sim' : 'Não' }}</div>
             </div>
         </div>
 

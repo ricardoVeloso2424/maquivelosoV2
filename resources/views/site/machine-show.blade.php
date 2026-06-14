@@ -2,45 +2,58 @@
 
 @section('content')
 @php
-
-    $money = function ($value) {
-        if ($value === null || $value === '') return null;
-        return number_format((float)$value, 0, ',', '.') . ' €';
-    };
-
     $name = $machine->name ?? '—';
-    $priceText = $money($machine->price);
+    $priceText = $machine->price_formatted;
+    $state = $machine->priceState();
     $categoryName = $machine->category->name ?? null;
 
     $images = $machine->images ?? collect();
-    $main = $machine->featuredImage ?? null;
-    if (!$main && $images->count()) $main = $images->first();
+    $main = $machine->main_image;
 
     $mainUrl = $main?->public_url;
+    $galleryImages = $images->filter(fn ($img) => !empty($img->public_url));
+
+    if ($galleryImages->isEmpty() && $mainUrl) {
+        $galleryImages = collect([$main]);
+    }
+
     $contactWhatsapp = trim((string) ($siteSettings['contact_whatsapp'] ?? ''));
     $whatsappMachineName = trim((string) ($machine->name ?? 'máquina'));
+
+    $statusLabel = $machine->status_label;
+
+    $specs = collect([
+        ['label' => 'Categoria', 'value' => $categoryName],
+        ['label' => 'Marca', 'value' => $machine->brand ?? null],
+        ['label' => 'Modelo', 'value' => $machine->model ?? null],
+        ['label' => 'Estado', 'value' => $statusLabel],
+    ])->filter(fn ($item) => filled($item['value']))->values();
 @endphp
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <div>
-        <a href="{{ route('site.catalog') }}"
-           class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 18l-6-6 6-6"></path>
-            </svg>
-            Voltar ao catálogo
-        </a>
-    </div>
+<div class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <nav aria-label="Breadcrumb" class="text-sm text-slate-500">
+        <ol class="flex flex-wrap items-center gap-2">
+            <li>
+                <a href="{{ route('site.home') }}" class="rounded transition hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">Home</a>
+            </li>
+            <li class="text-slate-300">/</li>
+            <li>
+                <a href="{{ route('site.catalog') }}" class="rounded transition hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">Catálogo</a>
+            </li>
+            <li class="text-slate-300">/</li>
+            <li class="font-medium text-slate-700">{{ $name }}</li>
+        </ol>
+    </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-7 space-y-4">
-            <div class="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-                <div class="aspect-[4/3] bg-gray-100">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <section class="space-y-6 lg:col-span-7">
+            <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                <div class="aspect-[4/3] bg-slate-100">
                     @if($mainUrl)
-                        <img src="{{ $mainUrl }}" alt="{{ $name }}" class="h-full w-full object-cover">
+                        <img id="machine-main-image" src="{{ $mainUrl }}" alt="{{ $name }}" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async" class="h-full w-full object-cover">
                     @else
-                        <div class="h-full w-full flex items-center justify-center text-gray-400">
-                            <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <div class="flex h-full w-full items-center justify-center text-slate-400">
+                            <svg class="h-14 w-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                 <path d="M3 16l5-5 4 4 3-3 6 6"></path>
                                 <path d="M14 8h.01"></path>
@@ -50,98 +63,145 @@
                 </div>
             </div>
 
-            @if($images->count() > 1)
-                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                    @foreach($images as $img)
-                        @php $u = $img->public_url; @endphp
-                        <a href="{{ $u }}" target="_blank"
-                           class="block h-20 w-20 rounded-xl overflow-hidden ring-1 ring-gray-200 bg-gray-100 hover:ring-gray-400">
-                            @if($u)
-                                <img src="{{ $u }}" alt="" class="h-full w-full object-cover">
-                            @endif
-                        </a>
+            @if($galleryImages->count() > 1)
+                <div class="grid grid-cols-4 gap-3 sm:grid-cols-6">
+                    @foreach($galleryImages as $img)
+                        @php
+                            $thumbUrl = $img->thumb_url;
+                            $fullUrl = $img->public_url;
+                        @endphp
+                        <button
+                            type="button"
+                            data-gallery-thumb
+                            data-image-src="{{ $fullUrl }}"
+                            data-image-alt="{{ $name }}"
+                            class="group aspect-square overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition hover:ring-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+                            aria-label="Ver imagem adicional"
+                        >
+                            <img src="{{ $thumbUrl }}" alt="" width="200" height="200" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]">
+                        </button>
                     @endforeach
                 </div>
-                <p class="text-xs text-gray-500">Clique numa foto para abrir maior.</p>
             @endif
-        </div>
 
-        <div class="lg:col-span-5 space-y-6">
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
-                    {{ $name }}
-                </h1>
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-7">
+                <h2 class="text-xl font-semibold tracking-tight text-slate-900">Descrição</h2>
+                @if(!empty($machine->description))
+                    <div class="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700 sm:text-base">
+                        {{ $machine->description }}
+                    </div>
+                @else
+                    <p class="mt-3 text-sm text-slate-500">Sem descrição disponível para esta máquina.</p>
+                @endif
 
-                <div class="mt-3 flex flex-wrap items-center gap-3">
-                    @if($priceText)
-                        <span class="inline-flex items-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white">
-                            {{ $priceText }}
-                        </span>
-                    @else
-                        <span class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
-                            Sob consulta
-                        </span>
-                    @endif
+                @if($specs->isNotEmpty())
+                    <div class="mt-8 border-t border-slate-100 pt-6">
+                        <h3 class="text-base font-semibold text-slate-900">Especificações</h3>
+                        <dl class="mt-3 divide-y divide-slate-100">
+                            @foreach($specs as $spec)
+                                <div class="flex items-start justify-between gap-4 py-3 text-sm">
+                                    <dt class="text-slate-500">{{ $spec['label'] }}</dt>
+                                    <dd class="text-right font-medium text-slate-900">{{ $spec['value'] }}</dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                    </div>
+                @endif
+
+                <a href="{{ route('site.catalog') }}"
+                   class="mt-6 inline-flex rounded text-sm font-medium text-slate-700 underline-offset-4 transition hover:text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                    Ver mais máquinas no catálogo
+                </a>
+            </div>
+        </section>
+
+        <aside class="lg:col-span-5">
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:sticky lg:top-24 sm:p-7">
+                <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ $name }}</h1>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        {{ $statusLabel }}
+                    </span>
 
                     @if($categoryName)
-                        <span class="inline-flex items-center rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                             {{ $categoryName }}
                         </span>
                     @endif
 
                     @if(isset($machine->negotiable) && $machine->negotiable)
-                        <span class="inline-flex items-center rounded-xl bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                             Negociável
                         </span>
                     @endif
                 </div>
 
-                @if(!empty($machine->brand) || !empty($machine->model))
-                    <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        @if(!empty($machine->brand))
-                            <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                                <div class="text-xs text-gray-500">Marca</div>
-                                <div class="font-semibold text-gray-900 mt-1">{{ $machine->brand }}</div>
-                            </div>
+                <div class="mt-6 border-t border-slate-100 pt-6">
+                    @if($state === 'price' || $state === 'price_negotiable')
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Preço estimado</p>
+                        <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ $priceText }}</p>
+                        @if($state === 'price_negotiable')
+                            <p class="mt-2 text-sm text-slate-600">Valor sujeito a negociação.</p>
                         @endif
-                        @if(!empty($machine->model))
-                            <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                                <div class="text-xs text-gray-500">Modelo</div>
-                                <div class="font-semibold text-gray-900 mt-1">{{ $machine->model }}</div>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-                <div class="mt-6">
-                    <div class="text-sm font-semibold text-gray-900">Descrição</div>
-                    @if(!empty($machine->description))
-                        <div class="mt-2 text-sm leading-relaxed text-gray-700 whitespace-pre-line">
-                            {{ $machine->description }}
-                        </div>
+                    @elseif($state === 'negotiable')
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Preço</p>
+                        <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Preço negociável</p>
+                        <p class="mt-2 text-sm text-slate-600">Contacte-nos para proposta personalizada.</p>
                     @else
-                        <div class="mt-2 text-sm text-gray-500">Sem descrição.</div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Preço</p>
+                        <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Sob consulta</p>
+                        <p class="mt-2 text-sm text-slate-600">Contacte-nos para proposta personalizada.</p>
                     @endif
                 </div>
-            </div>
 
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <div class="text-sm font-semibold text-gray-900">Contactar</div>
-                <p class="mt-2 text-sm text-gray-600">
-                    Para confirmar preço, disponibilidade ou envio, usa a página de contacto.
-                </p>
-                <a href="{{ route('site.contact') }}"
-                   class="mt-4 inline-flex items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-                    Ir para contacto
-                </a>
-                <x-whatsapp-button
-                    :number="$contactWhatsapp"
-                    :message="'Olá! Tenho interesse na máquina ' . $whatsappMachineName . '. Pode dar mais informações?'"
-                    label="Contactar no WhatsApp"
-                    class="mt-3 inline-flex items-center justify-center rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700"
-                />
+                <div class="mt-8">
+                    <x-whatsapp-button
+                        :number="$contactWhatsapp"
+                        :message="'Olá! Tenho interesse na máquina ' . $whatsappMachineName . '. Pode dar mais informações?'"
+                        label="Contactar no WhatsApp"
+                        class="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+                    />
+
+                    <a href="{{ route('site.contact') }}"
+                       class="mt-3 inline-flex rounded text-sm font-medium text-slate-700 underline-offset-4 transition hover:text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
+                        Ver página de contacto
+                    </a>
+                </div>
             </div>
-        </div>
+        </aside>
     </div>
 </div>
+
+@if($galleryImages->count() > 1)
+<script>
+(() => {
+    const mainImage = document.getElementById('machine-main-image');
+    const thumbs = document.querySelectorAll('[data-gallery-thumb]');
+
+    if (!mainImage || !thumbs.length) {
+        return;
+    }
+
+    thumbs.forEach((thumb) => {
+        thumb.addEventListener('click', () => {
+            const src = thumb.getAttribute('data-image-src');
+            const alt = thumb.getAttribute('data-image-alt') || mainImage.alt;
+
+            if (!src) {
+                return;
+            }
+
+            mainImage.src = src;
+            mainImage.alt = alt;
+
+            thumbs.forEach((item) => {
+                item.classList.remove('ring-2', 'ring-slate-900', 'ring-offset-2');
+            });
+            thumb.classList.add('ring-2', 'ring-slate-900', 'ring-offset-2');
+        });
+    });
+})();
+</script>
+@endif
 @endsection
