@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0c0a09">
     <title>{{ $siteSettings['business_name'] ?? 'MaquiVeloso' }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/branding/maquivelosoLogo.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -59,14 +60,8 @@
         <div class="border-b border-stone-200/70 bg-stone-50/85 backdrop-blur transition-shadow duration-300" :class="scrolled ? 'shadow-sm' : ''">
             <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 lg:h-20">
                 <a href="{{ route('site.home') }}" class="group inline-flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-900 text-brand-400 shadow-sm transition group-hover:bg-stone-800">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <circle cx="12" cy="12" r="3.5"></circle>
-                            <path d="M12 2v6"></path><path d="M12 16v6"></path>
-                            <path d="M4.5 7l3 2"></path><path d="M16.5 15l3 2"></path>
-                            <path d="M19.5 7l-3 2"></path><path d="M7.5 15l-3 2"></path>
-                        </svg>
-                    </span>
+                    <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="MaquiVeloso" class="h-10 w-10 object-contain">
+
                     <span class="flex flex-col leading-none">
                         <span class="font-serif text-lg font-semibold tracking-tight text-stone-900 sm:text-xl">{{ $businessName }}</span>
                         <span class="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-400">Máquinas de costura</span>
@@ -130,23 +125,14 @@
                 {{-- Brand --}}
                 <div class="lg:pr-8">
                     <div class="flex items-center gap-3">
-                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-brand-400 ring-1 ring-white/10">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <circle cx="12" cy="12" r="3.5"></circle>
-                                <path d="M12 2v6"></path><path d="M12 16v6"></path>
-                                <path d="M4.5 7l3 2"></path><path d="M16.5 15l3 2"></path>
-                                <path d="M19.5 7l-3 2"></path><path d="M7.5 15l-3 2"></path>
-                            </svg>
-                        </span>
+                        <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="MaquiVeloso" class="h-10 w-10 object-contain">
+
                         <span class="font-serif text-xl font-semibold text-white">{{ $businessName }}</span>
                     </div>
                     <p class="mt-4 max-w-sm text-sm leading-relaxed text-stone-400">
                         Venda, revisão e acompanhamento para máquinas de costura domésticas e industriais.
                     </p>
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <x-ui.button :href="route('site.catalog')" variant="light" size="sm">Ver catálogo</x-ui.button>
-                        <x-ui.button :href="route('site.contact')" variant="on-dark" size="sm">Contacto</x-ui.button>
-                    </div>
+
                 </div>
 
                 {{-- Contact (real settings) --}}
@@ -193,18 +179,12 @@
                     <ul class="mt-5 space-y-3 text-sm text-stone-400">
                         <li class="flex items-start gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>Máquinas revistas antes da venda</li>
                         <li class="flex items-start gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>Apoio técnico após a compra</li>
-                        <li class="flex items-start gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>Aconselhamento próximo e honesto</li>
+                        <li class="flex items-start gap-3"><span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>Aconselhamento especializado</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-stone-500 sm:flex-row sm:items-center sm:justify-between">
-                <p>© {{ date('Y') }} {{ $businessName }}. Todos os direitos reservados.</p>
-                <p class="inline-flex items-center gap-2">
-                    <span class="h-px w-6 stitch-line text-brand-500/60"></span>
-                    Venda e assistência de máquinas de costura
-                </p>
-            </div>
+
         </div>
     </footer>
 </body>

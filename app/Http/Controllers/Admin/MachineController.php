@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Machine;
-use App\Models\MachineImage;
+use App\Services\ThumbnailService;
+use App\Support\PriceNormalizer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class MachineController extends Controller
 {
     private const MAX_IMAGE_UPLOAD_FILES = 8;
     private const MAX_IMAGE_UPLOAD_SIZE_KB = 5120;
-    private const THUMB_MAX_WIDTH = 600;
+
+    public function __construct(private readonly ThumbnailService $thumbnails)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -99,7 +102,7 @@ class MachineController extends Controller
         $machine->load('images');
 
         foreach ($machine->images as $img) {
-            $this->deleteImageFiles($img);
+            $this->thumbnails->deleteImageFiles($img);
         }
 
         $machine->delete();
@@ -138,7 +141,7 @@ class MachineController extends Controller
 
             $machine->images()->create([
                 'path' => $path,
-                'thumb_path' => $this->generateThumbnail($path),
+                'thumb_path' => $this->thumbnails->generate($path),
                 'sort_order' => $nextSort,
             ]);
 
@@ -148,6 +151,17 @@ class MachineController extends Controller
 
     private function validateMachineData(Request $request): array
     {
+        // Accept Portuguese/European price formats (e.g. "1.200,50", "1 200,50",
+        // "1200,50") by normalizing to a canonical decimal string before the
+        // numeric validation runs. Genuinely invalid input is left untouched so
+        // the numeric rule still rejects it with a proper error message.
+        $rawPrice = (string) $request->input('price', '');
+        if (trim($rawPrice) !== '') {
+            $request->merge([
+                'price' => PriceNormalizer::normalize($rawPrice) ?? $rawPrice,
+            ]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
@@ -176,94 +190,5 @@ class MachineController extends Controller
     private function statusKeys(): array
     {
         return array_keys((array) config('machines.statuses', []));
-    }
-
-    /**
-     * Apaga o ficheiro original e a respetiva miniatura (se existirem).
-     */
-    private function deleteImageFiles(MachineImage $image): void
-    {
-        $disk = Storage::disk('public');
-
-        foreach ([$image->path, $image->thumb_path] as $path) {
-            $path = (string) ($path ?? '');
-            if ($path !== '' && $disk->exists($path)) {
-                $disk->delete($path);
-            }
-        }
-    }
-
-    /**
-     * Gera uma miniatura redimensionada (máx. THUMB_MAX_WIDTH de largura) usando
-     * a extensão GD nativa do PHP. Devolve o caminho da miniatura ou null quando:
-     *  - a extensão GD não está disponível;
-     *  - o ficheiro não é uma imagem válida/suportada;
-     *  - a imagem já é mais pequena do que a largura máxima (usa-se o original).
-     *
-     * Quando devolve null, o accessor thumb_url faz fallback para o original,
-     * por isso nunca há páginas sem imagem por causa disto.
-     */
-    private function generateThumbnail(string $originalPath): ?string
-    {
-        if (!extension_loaded('gd')) {
-            return null;
-        }
-
-        $disk = Storage::disk('public');
-
-        if (!$disk->exists($originalPath)) {
-            return null;
-        }
-
-        $fullPath = $disk->path($originalPath);
-
-        $info = @getimagesize($fullPath);
-        if ($info === false) {
-            return null;
-        }
-
-        [$width, $height] = $info;
-        $type = $info[2] ?? null;
-
-        if (!$width || !$height || $width <= self::THUMB_MAX_WIDTH) {
-            return null;
-        }
-
-        $source = match ($type) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($fullPath),
-            IMAGETYPE_PNG => @imagecreatefrompng($fullPath),
-            IMAGETYPE_GIF => @imagecreatefromgif($fullPath),
-            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($fullPath) : false,
-            default => false,
-        };
-
-        if (!$source) {
-            return null;
-        }
-
-        $newWidth = self::THUMB_MAX_WIDTH;
-        $newHeight = (int) round($height * ($newWidth / $width));
-
-        $thumb = imagecreatetruecolor($newWidth, $newHeight);
-        // Fundo branco para achatar transparências (miniaturas saem como JPEG).
-        $white = imagecolorallocate($thumb, 255, 255, 255);
-        imagefilledrectangle($thumb, 0, 0, $newWidth, $newHeight, $white);
-        imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-        ob_start();
-        imagejpeg($thumb, null, 80);
-        $contents = ob_get_clean();
-
-        imagedestroy($source);
-        imagedestroy($thumb);
-
-        if ($contents === false || $contents === '') {
-            return null;
-        }
-
-        $thumbPath = 'machines/thumbs/' . pathinfo($originalPath, PATHINFO_FILENAME) . '.jpg';
-        $disk->put($thumbPath, $contents);
-
-        return $thumbPath;
     }
 }

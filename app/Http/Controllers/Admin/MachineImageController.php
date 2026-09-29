@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Machine;
 use App\Models\MachineImage;
+use App\Services\ThumbnailService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class MachineImageController extends Controller
 {
+    public function __construct(private readonly ThumbnailService $thumbnails)
+    {
+    }
+
     public function destroy(Machine $machine, MachineImage $image)
     {
         // segurança: garantir que a imagem pertence a esta máquina
@@ -18,13 +22,7 @@ class MachineImageController extends Controller
         }
 
         // apagar ficheiro(s) do storage (original + miniatura, se existirem)
-        $disk = Storage::disk('public');
-        foreach ([$image->path, $image->thumb_path] as $path) {
-            $path = (string) ($path ?? '');
-            if ($path !== '' && $disk->exists($path)) {
-                $disk->delete($path);
-            }
-        }
+        $this->thumbnails->deleteImageFiles($image);
 
         $image->delete();
 

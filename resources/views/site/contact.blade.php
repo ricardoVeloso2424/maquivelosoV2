@@ -1,4 +1,4 @@
-@extends('layouts.site')
+﻿@extends('layouts.site')
 
 @section('content')
 @php
@@ -136,7 +136,6 @@
                                     Enviar pelo WhatsApp
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 5l7 7-7 7"></path></svg>
                                 </button>
-                                <p class="text-center text-xs text-stone-500">Abre o WhatsApp numa nova janela — nada é enviado automaticamente.</p>
                             </form>
 
                             <div class="my-6 h-px w-full stitch-line text-white/15"></div>

@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', config('app.name', 'MaquiVeloso'))</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/branding/maquivelosoLogo.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -15,14 +16,8 @@
     <div class="relative isolate flex min-h-screen">
         <aside class="relative z-50 flex w-72 flex-col border-r border-stone-200 bg-white">
             <div class="flex items-center gap-3 px-6 pb-6 pt-8">
-                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-900 text-brand-400 shadow-sm">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                        <circle cx="12" cy="12" r="3.5"></circle>
-                        <path d="M12 2v6"></path><path d="M12 16v6"></path>
-                        <path d="M4.5 7l3 2"></path><path d="M16.5 15l3 2"></path>
-                        <path d="M19.5 7l-3 2"></path><path d="M7.5 15l-3 2"></path>
-                    </svg>
-                </span>
+                <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="MaquiVeloso" class="h-10 w-10 object-contain">
+
                 <div class="leading-tight">
                     <div class="font-serif text-lg font-semibold tracking-tight text-stone-900">Maquiveloso</div>
                     <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">Área de Gestão</div>
@@ -68,9 +63,9 @@
 
                 <a href="{{ route('admin.settings') }}"
                    class="mt-2 {{ $item }} {{ request()->routeIs('admin.settings') ? $active : $inactive }}">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path>
-                        <path d="M19.4 15a7.8 7.8 0 0 0 .1-1 7.8 7.8 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-1.7-1l-.3-2.6H9.4L9.1 7a7.5 7.5 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.8 7.8 0 0 0-.1 1 7.8 7.8 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 1.7 1l.3 2.6h5.2l.3-2.6a7.5 7.5 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6z"></path>
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
                     Definições
                 </a>
