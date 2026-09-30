@@ -5,16 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Machine;
-use App\Models\MachineImage;
+use App\Services\ThumbnailService;
+use App\Support\PriceNormalizer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class MachineController extends Controller
 {
-    private const STATUS = ['available', 'reserved', 'sold', 'inactive'];
     private const MAX_IMAGE_UPLOAD_FILES = 8;
     private const MAX_IMAGE_UPLOAD_SIZE_KB = 5120;
+
+    public function __construct(private readonly ThumbnailService $thumbnails)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -25,7 +28,8 @@ class MachineController extends Controller
         $machines = Machine::query()
             ->with([
                 'category:id,name',
-                'firstImage:id,machine_id,path,sort_order',
+                'firstImage:id,machine_id,path,thumb_path,sort_order',
+                'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
             ])
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
@@ -98,7 +102,7 @@ class MachineController extends Controller
         $machine->load('images');
 
         foreach ($machine->images as $img) {
-            $this->deleteImageFile($img);
+            $this->thumbnails->deleteImageFiles($img);
         }
 
         $machine->delete();
@@ -109,7 +113,7 @@ class MachineController extends Controller
     public function updateStatus(Request $request, Machine $machine)
     {
         $data = $request->validate([
-            'status' => ['required', Rule::in(self::STATUS)],
+            'status' => ['required', Rule::in($this->statusKeys())],
         ]);
 
         $machine->update([
@@ -137,6 +141,7 @@ class MachineController extends Controller
 
             $machine->images()->create([
                 'path' => $path,
+                'thumb_path' => $this->thumbnails->generate($path),
                 'sort_order' => $nextSort,
             ]);
 
@@ -146,13 +151,24 @@ class MachineController extends Controller
 
     private function validateMachineData(Request $request): array
     {
+        // Accept Portuguese/European price formats (e.g. "1.200,50", "1 200,50",
+        // "1200,50") by normalizing to a canonical decimal string before the
+        // numeric validation runs. Genuinely invalid input is left untouched so
+        // the numeric rule still rejects it with a proper error message.
+        $rawPrice = (string) $request->input('price', '');
+        if (trim($rawPrice) !== '') {
+            $request->merge([
+                'price' => PriceNormalizer::normalize($rawPrice) ?? $rawPrice,
+            ]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'brand' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', Rule::in(self::STATUS)],
+            'status' => ['required', Rule::in($this->statusKeys())],
             'description' => ['nullable', 'string'],
             'featured' => ['nullable', 'boolean'],
             'negotiable' => ['nullable', 'boolean'],
@@ -166,11 +182,13 @@ class MachineController extends Controller
         return $data;
     }
 
-    private function deleteImageFile(MachineImage $image): void
+    /**
+     * Chaves de estado válidas, a partir de config/machines.php.
+     *
+     * @return array<int, string>
+     */
+    private function statusKeys(): array
     {
-        $path = (string) ($image->path ?? '');
-        if ($path !== '' && Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        return array_keys((array) config('machines.statuses', []));
     }
 }

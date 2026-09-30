@@ -12,14 +12,21 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     *
+     * Demo/development data (the local admin and a test user) is only created
+     * in local/testing environments. In production this seeder is a no-op so
+     * that `php artisan db:seed` never creates predictable accounts. Use the
+     * `php artisan admin:create` command to create an administrator in production.
      */
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
+
         $this->call([
             AdminUserSeeder::class,
         ]);
-
-        // User::factory(10)->create();
 
         User::factory()->create([
             'name' => 'Test User',

@@ -8,42 +8,39 @@
     $category = request('category', '');
     $status   = request('status', '');
 
-    $statusLabels = [
-        'available' => 'Disponível',
-        'reserved'  => 'Reservada',
-        'sold'      => 'Vendida',
-        'inactive'  => 'Indisponível',
-    ];
+    $statusLabels = config('machines.statuses');
 
     $badgeClass = function (?string $s) {
         return match ($s) {
-            'available' => 'bg-green-100 text-green-700',
-            'reserved'  => 'bg-yellow-100 text-yellow-700',
-            'sold'      => 'bg-blue-100 text-blue-700',
-            'inactive'  => 'bg-gray-200 text-gray-700',
-            default     => 'bg-gray-200 text-gray-700',
+            'available' => 'bg-emerald-100 text-emerald-700',
+            'reserved'  => 'bg-amber-100 text-amber-700',
+            'sold'      => 'bg-sky-100 text-sky-700',
+            'inactive'  => 'bg-stone-200 text-stone-600',
+            default     => 'bg-stone-200 text-stone-600',
         };
     };
 @endphp
 
-<div class="flex items-center justify-between">
+<div class="flex items-center justify-between gap-4">
     <div>
-        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">Máquinas</h1>
+        <span class="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">
+            <span class="h-px w-7 stitch-line"></span>Catálogo
+        </span>
+        <h1 class="mt-2 font-serif text-4xl font-semibold tracking-tight text-stone-900">Máquinas</h1>
     </div>
 
-    <a href="{{ route('admin.machines.create') }}"
-       class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-        <span class="text-lg leading-none">+</span>
+    <x-ui.button :href="route('admin.machines.create')" variant="primary" size="md">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
         Nova Máquina
-    </a>
+    </x-ui.button>
 </div>
 
-<div class="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+<div class="mt-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-card">
     <form method="GET" action="{{ route('admin.machines.index') }}">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <div class="lg:col-span-8">
                 <div class="relative">
-                    <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
+                    <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-stone-400">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="7"></circle>
                             <path d="M21 21l-4.3-4.3"></path>
@@ -53,8 +50,8 @@
                     <input
                         name="q"
                         value="{{ $q }}"
-                        placeholder="Pesquisar por nome..."
-                        class="w-full rounded-xl border-gray-200 bg-white py-3 pl-12 pr-4 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                        placeholder="Pesquisar por nome, marca ou modelo..."
+                        class="w-full rounded-xl border-stone-300 bg-white py-3 pl-12 pr-4 text-sm transition focus:border-brand-500 focus:ring-brand-500"
                     />
                 </div>
             </div>
@@ -62,13 +59,13 @@
             <div class="lg:col-span-2">
                 <select
                     name="category"
-                    class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    class="w-full rounded-xl border-stone-300 bg-white py-3 text-sm transition focus:border-brand-500 focus:ring-brand-500"
                 >
                     <option value="">Categorias</option>
                     @foreach(($categories ?? []) as $cat)
                         @php
                             $catId   = is_object($cat) ? ($cat->id ?? null) : null;
-                            $catName = is_object($cat) ? ($cat->name ?? $cat->nome ?? '') : (string)$cat;
+                            $catName = is_object($cat) ? ($cat->name ?? '') : (string)$cat;
                         @endphp
                         @if($catId !== null)
                             <option value="{{ $catId }}" @selected((string)$category === (string)$catId)>{{ $catName }}</option>
@@ -80,7 +77,7 @@
             <div class="lg:col-span-2">
                 <select
                     name="status"
-                    class="w-full rounded-xl border-gray-200 bg-white py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
+                    class="w-full rounded-xl border-stone-300 bg-white py-3 text-sm transition focus:border-brand-500 focus:ring-brand-500"
                 >
                     <option value="">Estado</option>
                     @foreach($statusLabels as $key => $label)
@@ -90,33 +87,28 @@
             </div>
         </div>
 
-        <div class="mt-4 flex items-center justify-between">
-            <div class="text-sm text-gray-500">
+        <div class="mt-4 flex items-center justify-between gap-3 border-t border-stone-100 pt-4">
+            <div class="text-sm text-stone-500">
                 @if(isset($machines))
-                    {{ method_exists($machines, 'total') ? $machines->total() : $machines->count() }} resultado(s)
+                    <span class="font-semibold text-stone-900">{{ method_exists($machines, 'total') ? $machines->total() : $machines->count() }}</span> resultado(s)
                 @endif
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.machines.index') }}"
-                   class="text-sm font-semibold text-gray-600 hover:text-gray-900">
-                    Limpar
-                </a>
-
-                <button
-                    class="rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800">
-                    Filtrar
-                </button>
+            <div class="flex items-center gap-2">
+                @if($q !== '' || (string)$category !== '' || $status !== '')
+                    <x-ui.button :href="route('admin.machines.index')" variant="ghost" size="sm">Limpar</x-ui.button>
+                @endif
+                <x-ui.button type="submit" variant="dark" size="md">Filtrar</x-ui.button>
             </div>
         </div>
     </form>
 </div>
 
-<div class="mt-8 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+<div class="mt-8 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-card">
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
             <thead>
-                <tr class="text-left text-gray-500 border-b border-gray-100">
+                <tr class="border-b border-stone-100 text-left text-stone-500">
                     <th class="px-6 py-4 font-semibold">Foto</th>
                     <th class="px-6 py-4 font-semibold">Nome</th>
                     <th class="px-6 py-4 font-semibold">Categoria</th>
@@ -124,38 +116,36 @@
                     <th class="px-6 py-4 font-semibold">Estado</th>
                     <th class="px-6 py-4 font-semibold">Neg.</th>
                     <th class="px-6 py-4 font-semibold">Data</th>
-                    <th class="px-6 py-4 font-semibold text-right">Ações</th>
+                    <th class="px-6 py-4 text-right font-semibold">Ações</th>
                 </tr>
             </thead>
 
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-stone-100">
                 @forelse(($machines ?? []) as $machine)
                     @php
-                        $img = $machine->firstImage;
+                        $imgUrl = $machine->main_image?->thumb_url;
 
-                        $imgUrl = $img?->public_url;
-
-                        $mName       = $machine->name ?? $machine->nome ?? '—';
-                        $mCategory   = $machine->category->name ?? $machine->category->nome ?? '—';
-                        $mPrice      = $machine->price ?? $machine->preco ?? null;
-                        $mStatus     = $machine->status ?? $machine->estado ?? null;
-                        $mNegotiable = (bool)($machine->negotiable ?? false);
-                        $createdAt   = $machine->created_at ?? null;
+                        $mName       = $machine->name ?? '—';
+                        $mCategory   = $machine->category->name ?? '—';
+                        $mPrice      = $machine->price_formatted;
+                        $mStatus     = $machine->status;
+                        $mNegotiable = (bool) $machine->negotiable;
+                        $createdAt   = $machine->created_at;
 
                         $updateStatusUrl = route('admin.machines.updateStatus', $machine);
                     @endphp
 
-                    <tr class="hover:bg-gray-50/60">
+                    <tr class="transition hover:bg-stone-50">
                         <td class="px-6 py-4">
-                            <div class="h-14 w-14 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-200">
+                            <div class="h-14 w-14 overflow-hidden rounded-xl bg-stone-100 ring-1 ring-stone-200">
                                 @if($imgUrl)
-                                    <img src="{{ $imgUrl }}" alt="" class="h-full w-full object-cover">
+                                    <img src="{{ $imgUrl }}" alt="" width="56" height="56" loading="lazy" decoding="async" class="h-full w-full object-cover">
                                 @else
-                                    <div class="h-full w-full flex items-center justify-center text-gray-400">
-                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <div class="flex h-full w-full items-center justify-center text-stone-300">
+                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                                             <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                             <path d="M3 16l5-5 4 4 3-3 6 6"></path>
-                                            <path d="M14 8h.01"></path>
+                                            <circle cx="14" cy="8" r="1.4"></circle>
                                         </svg>
                                     </div>
                                 @endif
@@ -163,50 +153,43 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-gray-900">{{ $mName }}</div>
+                            <div class="font-semibold text-stone-900">{{ $mName }}</div>
                         </td>
 
-                        <td class="px-6 py-4 text-gray-800">
-                            {{ $mCategory }}
-                        </td>
+                        <td class="px-6 py-4 text-stone-700">{{ $mCategory }}</td>
 
-                        <td class="px-6 py-4 text-gray-800">
-                            @if($mPrice === null || $mPrice === '')
-                                -
-                            @else
-                                {{ number_format((float)$mPrice, 0, ',', '.') }} €
-                            @endif
-                        </td>
+                        <td class="px-6 py-4 font-medium text-stone-900">{{ $mPrice ?? '—' }}</td>
 
                         <td class="px-6 py-4">
                             <span
-                                class="inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}"
+                                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClass($mStatus) }}"
                                 data-status-badge
                             >
-                                {{ $statusLabels[$mStatus] ?? ucfirst((string)$mStatus) }}
+                                {{ $machine->status_label }}
                             </span>
                         </td>
 
                         <td class="px-6 py-4">
                             @if($mNegotiable)
-                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-white text-xs font-bold" title="Negociável">N</span>
+                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white" title="Negociável">N</span>
                             @else
-                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-xs font-bold" title="Não negociável">—</span>
+                                <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-400" title="Não negociável">—</span>
                             @endif
                         </td>
 
-                        <td class="px-6 py-4 text-gray-500">
+                        <td class="px-6 py-4 text-stone-500">
                             @if($createdAt)
                                 {{ \Carbon\Carbon::parse($createdAt)->format('d/m/Y') }}
                             @else
-                                -
+                                —
                             @endif
                         </td>
 
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('admin.machines.edit', $machine) }}"
-                                   class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 hover:bg-gray-50">
+                                   class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-700 transition hover:border-brand-500 hover:text-brand-700"
+                                   title="Editar">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M12 20h9"></path>
                                         <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
@@ -216,24 +199,19 @@
                                 <div class="relative inline-flex">
                                     <button
                                         type="button"
-                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-700 transition hover:border-brand-500 hover:text-brand-700"
                                         title="Alterar estado"
                                     >
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M4 21v-7"></path>
-                                            <path d="M4 10V3"></path>
-                                            <path d="M12 21v-9"></path>
-                                            <path d="M12 8V3"></path>
-                                            <path d="M20 21v-5"></path>
-                                            <path d="M20 12V3"></path>
-                                            <path d="M2 14h4"></path>
-                                            <path d="M10 8h4"></path>
-                                            <path d="M18 16h4"></path>
+                                            <path d="M4 21v-7"></path><path d="M4 10V3"></path>
+                                            <path d="M12 21v-9"></path><path d="M12 8V3"></path>
+                                            <path d="M20 21v-5"></path><path d="M20 12V3"></path>
+                                            <path d="M2 14h4"></path><path d="M10 8h4"></path><path d="M18 16h4"></path>
                                         </svg>
                                     </button>
 
                                     <select
-                                        class="absolute inset-0 h-9 w-9 opacity-0 cursor-pointer"
+                                        class="absolute inset-0 h-9 w-9 cursor-pointer opacity-0"
                                         aria-label="Alterar estado"
                                         data-status-select
                                         data-update-url="{{ $updateStatusUrl }}"
@@ -248,8 +226,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-16 text-center text-gray-500">
-                            Ainda não tens máquinas. Clica em <span class="font-semibold">Nova Máquina</span>.
+                        <td colspan="8" class="px-6 py-16 text-center text-stone-500">
+                            Ainda não tens máquinas. Clica em <span class="font-semibold text-stone-900">Nova Máquina</span>.
                         </td>
                     </tr>
                 @endforelse
@@ -258,7 +236,7 @@
     </div>
 
     @if(isset($machines) && method_exists($machines, 'links'))
-        <div class="border-t border-gray-100 px-6 py-4">
+        <div class="border-t border-stone-100 px-6 py-4">
             {{ $machines->appends(request()->query())->links() }}
         </div>
     @endif
@@ -268,19 +246,21 @@
 (function () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    const labelMap = {
-        available: 'Disponível',
-        reserved: 'Reservada',
-        sold: 'Vendida',
-        inactive: 'Indisponível',
-    };
+    const labelMap = @json(config('machines.statuses'));
 
     const classMap = {
-        available: 'bg-green-100 text-green-700',
-        reserved: 'bg-yellow-100 text-yellow-700',
-        sold: 'bg-blue-100 text-blue-700',
-        inactive: 'bg-gray-200 text-gray-700',
+        available: 'bg-emerald-100 text-emerald-700',
+        reserved: 'bg-amber-100 text-amber-700',
+        sold: 'bg-sky-100 text-sky-700',
+        inactive: 'bg-stone-200 text-stone-600',
     };
+
+    const allClasses = [
+        'bg-emerald-100','text-emerald-700',
+        'bg-amber-100','text-amber-700',
+        'bg-sky-100','text-sky-700',
+        'bg-stone-200','text-stone-600',
+    ];
 
     document.querySelectorAll('[data-status-select]').forEach((select) => {
         let last = select.value;
@@ -315,16 +295,9 @@
 
                 if (badge) {
                     badge.textContent = labelMap[value] ?? value;
-
-                    badge.classList.remove(
-                        'bg-green-100','text-green-700',
-                        'bg-yellow-100','text-yellow-700',
-                        'bg-blue-100','text-blue-700',
-                        'bg-gray-200','text-gray-700'
-                    );
-
-                    const cls = (classMap[value] || 'bg-gray-200 text-gray-700').split(' ');
-                    cls.forEach(c => badge.classList.add(c));
+                    badge.classList.remove(...allClasses);
+                    const cls = (classMap[value] || 'bg-stone-200 text-stone-600').split(' ');
+                    cls.forEach((c) => badge.classList.add(c));
                 }
             } catch (e) {
                 select.value = last;
@@ -337,4 +310,3 @@
 })();
 </script>
 @endsection
-

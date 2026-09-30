@@ -4,33 +4,10 @@
     $val = function ($key, $fallback = '') use ($machine) {
         if (!$machine) return old($key, $fallback);
 
-        $map = [
-            'name'        => ['name', 'nome'],
-            'description' => ['description', 'descricao'],
-            'category_id' => ['category_id', 'categoria_id'],
-            'price'       => ['price', 'preco'],
-            'status'      => ['status', 'estado'],
-            'featured'    => ['featured', 'destaque', 'is_featured'],
-            'negotiable'  => ['negotiable', 'negociable'],
-        ];
-
-        $candidates = $map[$key] ?? [$key];
-
-        foreach ($candidates as $cand) {
-            if (isset($machine->{$cand}) && $machine->{$cand} !== null) {
-                return old($key, $machine->{$cand});
-            }
-        }
-
-        return old($key, $fallback);
+        return old($key, $machine->{$key} ?? $fallback);
     };
 
-    $statusOptions = [
-        'available' => 'Disponível',
-        'reserved'  => 'Reservada',
-        'sold'      => 'Vendida',
-        'inactive'  => 'Indisponível',
-    ];
+    $statusOptions = config('machines.statuses');
 
     $selectedCategory = (string) $val('category_id', '');
     $selectedStatus   = (string) $val('status', 'available');
@@ -52,12 +29,13 @@
         ->unique(fn ($img) => $img->id ?? spl_object_id($img))
         ->values();
 
+    $inputClass = 'w-full rounded-xl border-stone-300 bg-white px-4 py-3 text-sm shadow-sm transition focus:border-brand-500 focus:ring-brand-500';
 @endphp
 
 @if ($errors->any())
     <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        <div class="font-semibold mb-2">Corrige estes erros:</div>
-        <ul class="list-disc pl-5 space-y-1">
+        <div class="mb-2 font-semibold">Corrige estes erros:</div>
+        <ul class="list-disc space-y-1 pl-5">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -67,35 +45,64 @@
 
 @if($isEdit && $existingImages->count())
     <div class="mt-6">
-        <div class="text-sm font-semibold text-gray-900">Imagens atuais</div>
+        <div class="text-sm font-semibold text-stone-900">Imagens atuais</div>
+        <p class="mt-1 text-xs text-stone-500">
+            A imagem principal é a que aparece no catálogo, na página inicial e no topo do detalhe.
+            Se não escolheres nenhuma, é usada a primeira.
+        </p>
 
-        <div class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-3">
+        <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
             @foreach($existingImages as $img)
-                @php $u = $img->public_url; @endphp
+                @php
+                    $u = $img->thumb_url;
+                    $isMain = (bool) ($img->is_featured ?? false);
+                @endphp
 
-                <div class="relative h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100">
-                    @if($u)
-                        <img src="{{ $u }}" alt="" class="h-full w-full object-cover">
-                    @endif
+                <div class="flex flex-col items-center gap-1">
+                    <div class="relative h-20 w-20 overflow-hidden rounded-xl bg-stone-100 ring-1 {{ $isMain ? 'ring-2 ring-brand-600' : 'ring-stone-200' }}">
+                        @if($u)
+                            <img src="{{ $u }}" alt="" width="80" height="80" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        @endif
 
-                    @if(isset($img->id) && isset($machine->id))
+                        @if($isMain)
+                            <span class="absolute left-1 top-1 rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">Principal</span>
+                        @endif
+
+                        @if(isset($img->id) && isset($machine->id))
+                            <form
+                                method="POST"
+                                action="{{ route('admin.machines.images.destroy', ['machine' => $machine->id, 'image' => $img->id]) }}"
+                                onsubmit="return confirm('Remover esta imagem?');"
+                                class="absolute right-1 top-1"
+                            >
+                                @csrf
+                                @method('DELETE')
+                                <button
+                                    type="submit"
+                                    class="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-200 bg-white/90 text-stone-600 shadow-sm transition hover:bg-white hover:text-red-600"
+                                    title="Remover"
+                                >
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 6L6 18"></path>
+                                        <path d="M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+
+                    @if(isset($img->id) && isset($machine->id) && !$isMain)
                         <form
                             method="POST"
-                            action="{{ route('admin.machines.images.destroy', ['machine' => $machine->id, 'image' => $img->id]) }}"
-                            onsubmit="return confirm('Remover esta imagem?');"
-                            class="absolute top-1 right-1"
+                            action="{{ route('admin.machines.images.feature', ['machine' => $machine->id, 'image' => $img->id]) }}"
                         >
                             @csrf
-                            @method('DELETE')
+                            @method('PATCH')
                             <button
                                 type="submit"
-                                class="h-7 w-7 rounded-lg bg-white/90 border border-gray-200 text-gray-700 hover:bg-white shadow-sm flex items-center justify-center"
-                                title="Remover"
+                                class="text-[11px] font-medium text-stone-500 underline-offset-2 transition hover:text-brand-700 hover:underline"
                             >
-                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 6L6 18"></path>
-                                    <path d="M6 6l12 12"></path>
-                                </svg>
+                                Tornar principal
                             </button>
                         </form>
                     @endif
@@ -110,7 +117,7 @@
     method="POST"
     action="{{ $isEdit ? route('admin.machines.update', $machine) : route('admin.machines.store') }}"
     enctype="multipart/form-data"
-    class="space-y-8 mt-6"
+    class="mt-6 space-y-8"
 >
     @csrf
     @if($isEdit)
@@ -118,22 +125,22 @@
     @endif
 
     <div>
-        <div class="text-sm font-semibold text-gray-900">Adicionar imagens</div>
+        <div class="text-sm font-semibold text-stone-900">Adicionar imagens</div>
 
-        <div id="new-images-preview" class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-3"></div>
+        <div id="new-images-preview" class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6"></div>
 
         <div class="mt-3 flex items-start gap-4">
-            <label class="group relative flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white text-center hover:border-gray-900">
-                <input id="imagesInput" type="file" name="images[]" class="absolute inset-0 opacity-0 cursor-pointer" multiple accept="image/*">
-                <svg class="h-5 w-5 text-gray-500 group-hover:text-gray-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <label class="group relative flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-300 bg-white text-center transition hover:border-brand-500">
+                <input id="imagesInput" type="file" name="images[]" class="absolute inset-0 cursor-pointer opacity-0" multiple accept="image/*">
+                <svg class="h-5 w-5 text-stone-400 transition group-hover:text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 3v12"></path>
                     <path d="M7 8l5-5 5 5"></path>
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 </svg>
-                <div class="mt-1 text-xs text-gray-500 group-hover:text-gray-900">Adicionar</div>
+                <div class="mt-1 text-xs text-stone-500 transition group-hover:text-brand-600">Adicionar</div>
             </label>
 
-            <div class="text-xs text-gray-500 leading-relaxed pt-1">
+            <div class="pt-1 text-xs leading-relaxed text-stone-500">
                 Podes selecionar várias imagens (Ctrl).
                 <br>
                 Máx: 8 imagens, 5MB por imagem.
@@ -142,46 +149,26 @@
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-900 mb-2">
+        <label class="mb-2 block text-sm font-semibold text-stone-900">
             Nome <span class="text-red-500">*</span>
         </label>
-        <input
-            type="text"
-            name="name"
-            value="{{ $val('name') }}"
-            placeholder="Ex: Singer Tradition 2250"
-            class="w-full rounded-xl border-gray-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-            required
-        />
+        <input type="text" name="name" value="{{ $val('name') }}" placeholder="Ex: Singer Tradition 2250" class="{{ $inputClass }}" required>
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-900 mb-2">
-            Descrição
-        </label>
-        <textarea
-            name="description"
-            rows="5"
-            placeholder="Descreva a máquina..."
-            class="w-full rounded-xl border-gray-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-        >{{ $val('description') }}</textarea>
+        <label class="mb-2 block text-sm font-semibold text-stone-900">Descrição</label>
+        <textarea name="description" rows="5" placeholder="Descreva a máquina..." class="{{ $inputClass }}">{{ $val('description') }}</textarea>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-            <label class="block text-sm font-semibold text-gray-900 mb-2">
-                Categoria
-            </label>
-            <select
-                name="category_id"
-                class="w-full rounded-xl border-gray-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-            >
+            <label class="mb-2 block text-sm font-semibold text-stone-900">Categoria</label>
+            <select name="category_id" class="{{ $inputClass }}">
                 <option value="">— Sem categoria —</option>
-
                 @foreach(($categories ?? []) as $cat)
                     @php
                         $catId = is_object($cat) ? ($cat->id ?? null) : null;
-                        $catName = is_object($cat) ? ($cat->name ?? $cat->nome ?? '') : (string)$cat;
+                        $catName = is_object($cat) ? ($cat->name ?? '') : (string)$cat;
                     @endphp
                     @if($catId !== null)
                         <option value="{{ $catId }}" @selected($selectedCategory === (string)$catId)>{{ $catName }}</option>
@@ -191,76 +178,40 @@
         </div>
 
         <div>
-            <label class="block text-sm font-semibold text-gray-900 mb-2">
-                Preço (€)
-            </label>
-            <input
-                type="text"
-                inputmode="decimal"
-                name="price"
-                value="{{ $val('price') }}"
-                placeholder="Deixe vazio para 'sob consulta'"
-                class="w-full rounded-xl border-gray-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-            />
+            <label class="mb-2 block text-sm font-semibold text-stone-900">Preço (€)</label>
+            <input type="text" inputmode="decimal" name="price" value="{{ $val('price') }}" placeholder="Deixe vazio para 'sob consulta'" class="{{ $inputClass }}">
         </div>
     </div>
 
     <div>
-        <label class="block text-sm font-semibold text-gray-900 mb-2">
+        <label class="mb-2 block text-sm font-semibold text-stone-900">
             Estado <span class="text-red-500">*</span>
         </label>
-        <select
-            name="status"
-            class="w-full rounded-xl border-gray-200 bg-white px-4 py-3 text-sm shadow-sm focus:border-gray-900 focus:ring-gray-900"
-            required
-        >
+        <select name="status" class="{{ $inputClass }}" required>
             @foreach($statusOptions as $key => $label)
                 <option value="{{ $key }}" @selected($selectedStatus === $key)>{{ $label }}</option>
             @endforeach
         </select>
     </div>
 
-    <div class="flex items-center gap-3">
-        <input
-            id="featured"
-            type="checkbox"
-            name="featured"
-            value="1"
-            @checked($isFeatured)
-            class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-        />
-        <label for="featured" class="text-sm font-semibold text-gray-900">
-            Destacar na página inicial
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-stone-300">
+            <input id="featured" type="checkbox" name="featured" value="1" @checked($isFeatured) class="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500">
+            <span class="text-sm font-semibold text-stone-900">Destacar na página inicial</span>
+        </label>
+
+        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 transition hover:border-stone-300">
+            <input id="negotiable" type="checkbox" name="negotiable" value="1" @checked($isNegotiable) class="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500">
+            <span class="text-sm font-semibold text-stone-900">Negociável</span>
         </label>
     </div>
 
-    <div class="flex items-center gap-3">
-        <input
-            id="negotiable"
-            type="checkbox"
-            name="negotiable"
-            value="1"
-            @checked($isNegotiable)
-            class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-        />
-        <label for="negotiable" class="text-sm font-semibold text-gray-900">
-            Negociável
-        </label>
-    </div>
+    <div class="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2">
+        <x-ui.button :href="route('admin.machines.index')" variant="outline" size="lg" class="w-full">Cancelar</x-ui.button>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-        <a href="{{ route('admin.machines.index') }}"
-           class="inline-flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50">
-            Cancelar
-        </a>
-
-        <button
-            id="submitBtn"
-            type="submit"
-            class="inline-flex w-full items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
-        >
+        <x-ui.button id="submitBtn" type="submit" variant="primary" size="lg" class="w-full">
             {{ $isEdit ? 'Guardar Alterações' : 'Criar Máquina' }}
-        </button>
+        </x-ui.button>
     </div>
 </form>
 
@@ -278,7 +229,7 @@
                 const url = URL.createObjectURL(file);
 
                 const wrap = document.createElement('div');
-                wrap.className = 'h-20 w-20 overflow-hidden rounded-xl ring-1 ring-gray-200 bg-gray-100';
+                wrap.className = 'h-20 w-20 overflow-hidden rounded-xl ring-1 ring-stone-200 bg-stone-100';
 
                 const img = document.createElement('img');
                 img.src = url;

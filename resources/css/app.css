@@ -1,4 +1,93 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 [x-cloak] { display: none !important; }
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-stone-50 text-stone-800 antialiased;
+    }
+
+    ::selection {
+        @apply bg-brand-200 text-brand-900;
+    }
+}
+
+@layer components {
+    /* Animated underline navigation link (desktop). */
+    .nav-link {
+        @apply relative font-semibold text-stone-600 transition-colors duration-200 hover:text-stone-900;
+    }
+
+    .nav-link::after {
+        content: '';
+        @apply absolute -bottom-1.5 left-0 h-0.5 w-0 rounded-full bg-brand-500 transition-all duration-300;
+    }
+
+    .nav-link:hover::after,
+    .nav-link[aria-current="page"]::after {
+        @apply w-full;
+    }
+
+    .nav-link[aria-current="page"] {
+        @apply text-stone-900;
+    }
+}
+
+@layer utilities {
+    /* Discreet "fabric" dot patterns. */
+    .pattern-dots {
+        background-image: radial-gradient(rgba(28, 25, 23, 0.07) 1px, transparent 1px);
+        background-size: 18px 18px;
+    }
+
+    .pattern-dots-light {
+        background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+        background-size: 18px 18px;
+    }
+
+    /* Stitched (dashed) line, follows currentColor. */
+    .stitch-line {
+        background-image: repeating-linear-gradient(90deg, currentColor 0 9px, transparent 9px 17px);
+    }
+}
+
+/* Scroll-reveal (progressive enhancement; JS toggles .is-visible). */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+[data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+[data-reveal][data-reveal-delay="1"] { transition-delay: 0.08s; }
+[data-reveal][data-reveal-delay="2"] { transition-delay: 0.16s; }
+[data-reveal][data-reveal-delay="3"] { transition-delay: 0.24s; }
+[data-reveal][data-reveal-delay="4"] { transition-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .animate-float,
+    .animate-fade-up,
+    .animate-fade-in {
+        animation: none !important;
+    }
+}

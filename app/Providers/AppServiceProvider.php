@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Setting;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,14 +23,14 @@ class AppServiceProvider extends ServiceProvider
                 'contact_hours' => '',
             ];
 
-            $settings = $defaults;
-
+            // getSiteSettings caches "forever", so on a warm cache there is no
+            // per-request DB query. The try/catch keeps the public site working
+            // before migrations run or when the DB/cache is briefly unavailable,
+            // without paying for a Schema::hasTable() check on every request.
             try {
-                if (Schema::hasTable('settings')) {
-                    $settings = Setting::getSiteSettings($defaults);
-                }
+                $settings = Setting::getSiteSettings($defaults);
             } catch (\Throwable) {
-                // Keep defaults when DB/table is unavailable.
+                $settings = $defaults;
             }
 
             $view->with('siteSettings', $settings);

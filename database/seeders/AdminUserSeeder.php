@@ -12,9 +12,18 @@ class AdminUserSeeder extends Seeder
 
     /**
      * Seed a default admin user for local development.
+     *
+     * This account uses a well-known development password and must never run in
+     * production. Production administrators are created with `php artisan admin:create`.
      */
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command?->warn('AdminUserSeeder skipped in production. Use `php artisan admin:create`.');
+
+            return;
+        }
+
         User::allowAdminPromotion(function (): void {
             $existingPassword = User::query()
                 ->where('email', self::ADMIN_EMAIL)

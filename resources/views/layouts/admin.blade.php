@@ -7,31 +7,33 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', config('app.name', 'MaquiVeloso'))</title>
-
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="{{ asset('images/branding/maquivelosoLogo.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans bg-gray-50 text-gray-900">
-    <div class="min-h-screen flex relative isolate">
-        <aside class="w-72 bg-white border-r border-gray-100 flex flex-col relative z-50">
-            <div class="px-6 pt-8 pb-6">
-                <div class="text-xl font-extrabold tracking-tight">Maquiveloso</div>
-                <div class="text-sm text-gray-500 mt-1">Área de Gestão</div>
+<body class="bg-stone-100 font-sans text-stone-800">
+    <div class="relative isolate flex min-h-screen">
+        <aside class="relative z-50 flex w-72 flex-col border-r border-stone-200 bg-white">
+            <div class="flex items-center gap-3 px-6 pb-6 pt-8">
+                <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="MaquiVeloso" class="h-10 w-10 object-contain">
+
+                <div class="leading-tight">
+                    <div class="font-serif text-lg font-semibold tracking-tight text-stone-900">Maquiveloso</div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">Área de Gestão</div>
+                </div>
             </div>
 
             <nav class="px-4">
                 @php
                     $item = "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition";
-                    $active = "bg-gray-900 text-white shadow-sm";
-                    $inactive = "text-gray-700 hover:bg-gray-100";
+                    $active = "bg-stone-900 text-white shadow-sm";
+                    $inactive = "text-stone-600 hover:bg-stone-100 hover:text-stone-900";
                 @endphp
 
                 <a href="{{ route('admin.dashboard') }}"
                    class="{{ $item }} {{ request()->routeIs('admin.dashboard') ? $active : $inactive }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7" rx="2"></rect>
                         <rect x="14" y="3" width="7" height="7" rx="2"></rect>
                         <rect x="3" y="14" width="7" height="7" rx="2"></rect>
@@ -42,7 +44,7 @@
 
                 <a href="{{ route('admin.machines.index') }}"
                    class="mt-2 {{ $item }} {{ request()->routeIs('admin.machines.*') ? $active : $inactive }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 8a2 2 0 0 1-1 1.73l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 8"></path>
                         <path d="M3 8V16a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8"></path>
                         <path d="M3 8l9-5 9 5"></path>
@@ -52,7 +54,7 @@
 
                 <a href="{{ route('admin.categories.index') }}"
                    class="mt-2 {{ $item }} {{ request()->routeIs('admin.categories.*') ? $active : $inactive }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82Z"></path>
                         <path d="M7 7h.01"></path>
                     </svg>
@@ -61,18 +63,18 @@
 
                 <a href="{{ route('admin.settings') }}"
                    class="mt-2 {{ $item }} {{ request()->routeIs('admin.settings') ? $active : $inactive }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"></path>
-                        <path d="M19.4 15a7.8 7.8 0 0 0 .1-1 7.8 7.8 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-1.7-1l-.3-2.6H9.4L9.1 7a7.5 7.5 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.8 7.8 0 0 0-.1 1 7.8 7.8 0 0 0 .1 1l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 1.7 1l.3 2.6h5.2l.3-2.6a7.5 7.5 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6z"></path>
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
                     Definições
                 </a>
 
-                <div class="my-6 border-t border-gray-100"></div>
+                <div class="my-6 border-t border-stone-200"></div>
 
                 <a href="{{ route('site.home') }}" target="_blank"
                    class="{{ $item }} {{ $inactive }}">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 3h7v7"></path>
                         <path d="M10 14L21 3"></path>
                         <path d="M21 14v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"></path>
@@ -83,7 +85,7 @@
                 <form method="POST" action="{{ route('logout') }}" class="mt-2">
                     @csrf
                     <button type="submit" class="w-full text-left {{ $item }} text-red-600 hover:bg-red-50">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <path d="M16 17l5-5-5-5"></path>
                             <path d="M21 12H9"></path>
@@ -93,13 +95,14 @@
                 </form>
             </nav>
 
-            <div class="mt-auto px-6 py-6 text-xs text-gray-400">
+            <div class="mt-auto px-6 py-6 text-xs text-stone-400">
                 {{ config('app.name', 'MaquiVeloso') }}
             </div>
         </aside>
 
-        <main class="flex-1 relative z-10">
-            <div class="max-w-6xl mx-auto px-10 py-10">
+        <main class="relative z-10 flex-1">
+            <div class="mx-auto max-w-6xl px-6 py-10 sm:px-10">
+                @include('admin.partials.flash')
                 @yield('content')
             </div>
         </main>

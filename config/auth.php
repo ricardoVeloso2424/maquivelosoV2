@@ -112,6 +112,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    'registration_enabled' => env('REGISTRATION_ENABLED', true),
+    /*
+    |--------------------------------------------------------------------------
+    | Public Registration
+    |--------------------------------------------------------------------------
+    |
+    | Controls whether the public self-registration routes are available.
+    | Disabled by default so production is safe out of the box; enable it
+    | explicitly with REGISTRATION_ENABLED=true only where it is needed.
+    |
+    */
+
+    'registration_enabled' => env('REGISTRATION_ENABLED', false),
 
 ];
