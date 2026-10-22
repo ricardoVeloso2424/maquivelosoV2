@@ -3,54 +3,53 @@
 @php
     $name = $machine->name ?? '—';
     $imgUrl = $machine->main_image?->thumb_url;
-    $state = $machine->priceState();
-    $showNegotiable = in_array($state, ['price_negotiable', 'negotiable'], true);
+    $isPriceNegotiable = $machine->priceState() === 'price_negotiable';
     $categoryName = $machine->category->name ?? null;
 @endphp
 
 <a
     href="{{ route('site.machine.show', $machine) }}"
-    {{ $attributes->merge(['class' => 'group relative flex flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-stone-200/70 transition duration-300 hover:-translate-y-1 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2']) }}
+    {{ $attributes->merge(['class' => 'group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:border-navy-300 hover:shadow-[0_10px_30px_-18px_rgba(16,32,58,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-2']) }}
 >
-    <x-ui.image
-        :src="$imgUrl"
-        :alt="$name"
-        ratio="aspect-[4/3]"
-        width="500"
-        height="375"
-        imgClass="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-    >
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-900/15 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100"></div>
-
-        @if($showNegotiable)
-            <span class="absolute left-3 top-3">
-                <x-ui.badge variant="solid">Negociável</x-ui.badge>
-            </span>
+    <div class="relative aspect-[4/3] overflow-hidden bg-slate-50">
+        @if($imgUrl)
+            <img
+                src="{{ $imgUrl }}"
+                alt="{{ $name }}"
+                width="600"
+                height="450"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-contain p-5 mix-blend-multiply transition duration-300 motion-safe:group-hover:scale-[1.03]"
+            >
+        @else
+            <div class="flex h-full w-full items-center justify-center text-slate-300">
+                <svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M3 16l5-5 4 4 3-3 6 6"></path>
+                    <circle cx="14" cy="8" r="1.4"></circle>
+                </svg>
+            </div>
         @endif
 
+        @if($isPriceNegotiable)
+            <span class="absolute left-3 top-3 rounded-md bg-white px-2 py-1 text-xs font-semibold text-navy-800 ring-1 ring-inset ring-navy-100">Negociável</span>
+        @endif
+    </div>
+
+    <div class="flex flex-1 flex-col border-t border-slate-100 p-5">
         @if($categoryName)
-            <span class="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-stone-700 shadow-sm backdrop-blur">
-                {{ $categoryName }}
-            </span>
+            <p class="text-xs font-medium text-slate-500">{{ $categoryName }}</p>
         @endif
-    </x-ui.image>
 
-    <div class="flex flex-1 flex-col p-5">
-        <h3 class="line-clamp-1 text-lg font-semibold text-stone-900 transition-colors duration-200 group-hover:text-brand-700">
+        <h3 class="mt-1 line-clamp-2 text-base font-semibold leading-snug text-navy-950">
             {{ $name }}
         </h3>
 
-        <div class="mt-3 flex items-end justify-between gap-3">
-            <div class="flex min-h-[2.5rem] flex-col justify-center">
-                <x-machine.price :machine="$machine" variant="card" />
-            </div>
+        <div class="mt-auto flex items-end justify-between gap-3 pt-4">
+            <x-machine.price :machine="$machine" variant="card" />
 
-            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
-                <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M5 12h14"></path>
-                    <path d="M13 5l7 7-7 7"></path>
-                </svg>
-            </span>
+            <span class="shrink-0 text-sm font-semibold text-navy-700 underline-offset-4 group-hover:underline">Ver detalhes</span>
         </div>
     </div>
 </a>

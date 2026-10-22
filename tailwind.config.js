@@ -22,7 +22,21 @@ export default {
             },
 
             colors: {
-                // Brass / thread accent — the brand colour.
+                // Navy — primary identity colour (header, headings, CTAs).
+                navy: {
+                    50:  '#f2f5fa',
+                    100: '#e4eaf3',
+                    200: '#c7d3e4',
+                    300: '#9bb0cc',
+                    400: '#6984ab',
+                    500: '#46638f',
+                    600: '#304b74',
+                    700: '#233a5d',
+                    800: '#192c4a',
+                    900: '#10203a',
+                    950: '#0a1628',
+                },
+                // Brass / thread accent — legacy accent, still used by inner pages.
                 brand: {
                     50:  '#fdf8f1',
                     100: '#f9ecd8',

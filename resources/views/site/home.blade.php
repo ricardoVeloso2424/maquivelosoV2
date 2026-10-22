@@ -1,187 +1,178 @@
-﻿@extends('layouts.site')
+@extends('layouts.site')
 
 @section('content')
 @php
-$featuredMachines = $featuredMachines ?? collect();
-$businessName = $siteSettings['business_name'] ?? 'MaquiVeloso';
+    $featuredMachines = $featuredMachines ?? collect();
+    $catalogPicks = $catalogPicks ?? collect();
+    $categories = $categories ?? collect();
+    $businessName = $siteSettings['business_name'] ?? 'MaquiVeloso';
+
+    $products = $featuredMachines->isNotEmpty() ? $featuredMachines : $catalogPicks;
+    $heroCategories = $categories->take(3);
+
+    $whatsapp = preg_replace('/\D+/', '', (string) ($siteSettings['contact_whatsapp'] ?? ''));
+    $whatsapp = is_string($whatsapp) ? $whatsapp : '';
+
+    $services = [
+        [
+            'title' => 'Aconselhamento pré-venda',
+            'text' => 'Ajudamos a escolher a máquina adequada ao tipo de trabalho, ao volume de produção e ao orçamento.',
+            'icon' => '<path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/>',
+        ],
+        [
+            'title' => 'Revisão e assistência',
+            'text' => 'As máquinas são revistas antes da venda e continuamos a dar apoio técnico depois da compra.',
+            'icon' => '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+        ],
+        [
+            'title' => 'Entrega ou levantamento',
+            'text' => 'Entregamos nas instalações do cliente ou pode levantar a máquina nas nossas instalações.',
+            'icon' => '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
+        ],
+    ];
 @endphp
 
 {{-- ============================ HERO ============================ --}}
-<section class="relative overflow-hidden bg-stone-950 text-white">
-    <div class="pattern-dots-light pointer-events-none absolute inset-0 opacity-50"></div>
-    <div class="pointer-events-none absolute -right-24 top-1/2 hidden h-[34rem] w-[34rem] -translate-y-1/2 text-brand-500/20 motion-safe:animate-float lg:block" aria-hidden="true">
-        <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="100" cy="100" r="90" stroke-width="1.5" stroke-dasharray="5 9"></circle>
-            <circle cx="100" cy="100" r="62" stroke-width="2"></circle>
-            <path d="M100 84V38" stroke-width="2"></path>
-            <path d="M100 116V162" stroke-width="2"></path>
-            <path d="M113.9 92 153.7 69" stroke-width="2"></path>
-            <path d="M86.1 92 46.3 69" stroke-width="2"></path>
-            <path d="M86.1 108 46.3 131" stroke-width="2"></path>
-            <path d="M113.9 108 153.7 131" stroke-width="2"></path>
-            <circle cx="100" cy="100" r="11" stroke-width="2" class="text-brand-400"></circle>
-        </svg>
-    </div>
-    <div class="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand-500/10 blur-3xl" aria-hidden="true"></div>
-
-    <div class="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-        <div class="max-w-3xl motion-safe:animate-fade-up">
-
-
-            <h1 class="mt-7 font-serif text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-                A máquina certa para fazer o seu negócio avançar.
+<section class="bg-white" aria-labelledby="hero-title">
+    <div class="mx-auto max-w-7xl px-4 pb-14 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-20 lg:pt-24">
+        <div class="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
+            <h1 id="hero-title" class="text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.03em] text-navy-950 sm:text-6xl lg:col-span-7 lg:text-[4.25rem]">
+                Máquinas de costura revistas e com assistência.
             </h1>
 
-            <p class="mt-6 max-w-2xl text-lg leading-relaxed text-stone-300">
-                Equipamentos revistos, suporte técnico e orientação para uma compra segura.
-            </p>
-
-            <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <x-ui.button :href="route('site.catalog')" variant="light" size="lg">
-                    Ver catálogo
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                        <path d="M5 12h14"></path>
-                        <path d="M13 5l7 7-7 7"></path>
-                    </svg>
-                </x-ui.button>
-                <x-ui.button :href="route('site.contact')" variant="on-dark" size="lg">
-                    Falar com especialista
-                </x-ui.button>
-            </div>
-        </div>
-    </div>
-
-    <div class="relative h-px w-full stitch-line text-white/15"></div>
-</section>
-
-{{-- ======================= VALUE / SERVICES ======================= --}}
-<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-    <div class="grid gap-6 md:grid-cols-3">
-        @php
-        $values = [
-        ['title' => 'Aconselhamento pré-venda', 'text' => 'Ajudamos a escolher a máquina mais adequada às suas necessidades, orçamento e tipo de utilização.','icon' => 'chat'],
-        ['title' => 'Revisão e assistência', 'text' => 'Máquinas revistas e apoio técnico após a compra.', 'icon' => 'wrench'],
-        ['title' => 'Entrega ou levantamento', 'text' => 'Opções ajustadas à localização e urgência da sua empresa.', 'icon' => 'truck'],
-        ];
-        @endphp
-
-        @foreach($values as $i => $value)
-        <div data-reveal data-reveal-delay="{{ $i + 1 }}" class="group relative overflow-hidden rounded-3xl bg-white p-7 shadow-card ring-1 ring-stone-200/70 transition duration-300 hover:-translate-y-1 hover:shadow-card-hover">
-            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 ring-1 ring-brand-100">
-                @if($value['icon'] === 'chat')
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
-                    <path d="M8 9h8"></path>
-                    <path d="M8 13h5"></path>
-                </svg>
-                @elseif($value['icon'] === 'shield')
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3z"></path>
-                    <path d="M9 12l2 2 4-4"></path>
-                </svg>
-                @else
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path d="M3 6h11v9H3z"></path>
-                    <path d="M14 9h4l3 3v3h-7z"></path>
-                    <circle cx="7" cy="18" r="1.6"></circle>
-                    <circle cx="17" cy="18" r="1.6"></circle>
-                </svg>
-                @endif
-            </span>
-            <h3 class="mt-5 text-lg font-semibold text-stone-900">{{ $value['title'] }}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-stone-600">{{ $value['text'] }}</p>
-            <span class="pointer-events-none absolute -right-6 -bottom-6 h-20 w-20 rounded-full bg-brand-50 opacity-0 transition duration-300 group-hover:opacity-100"></span>
-        </div>
-        @endforeach
-    </div>
-</section>
-
-{{-- ======================= FEATURED MACHINES ======================= --}}
-<section class="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
-    <div data-reveal class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <x-ui.section-heading eyebrow="Catálogo" title="Máquinas em destaque">
-            Seleção atual de modelos disponíveis.
-        </x-ui.section-heading>
-        <a href="{{ route('site.catalog') }}" class="nav-link hidden text-sm sm:inline-block">Ver catálogo completo →</a>
-    </div>
-
-    @if($featuredMachines->isNotEmpty())
-    <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        @foreach($featuredMachines as $i => $machine)
-        <div data-reveal data-reveal-delay="{{ ($i % 3) + 1 }}">
-            <x-machine.card :machine="$machine" />
-        </div>
-        @endforeach
-    </div>
-
-    <div class="mt-10 flex justify-center sm:hidden">
-        <x-ui.button :href="route('site.catalog')" variant="outline" size="md">Ver catálogo completo</x-ui.button>
-    </div>
-    @else
-    <div class="mt-10" data-reveal>
-        <x-ui.empty-state title="Ainda não há máquinas em destaque">
-            Assim que houver modelos em destaque disponíveis, aparecem aqui.
-            <x-slot:action>
-                <x-ui.button :href="route('site.catalog')" variant="dark" size="md">Ver catálogo</x-ui.button>
-            </x-slot:action>
-        </x-ui.empty-state>
-    </div>
-    @endif
-</section>
-
-{{-- ======================= WHY CHOOSE US ======================= --}}
-<section class="mx-auto mt-20 max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="grid items-center gap-10 lg:grid-cols-2">
-        <div data-reveal>
-            <x-ui.section-heading eyebrow="Experiência" title="Porquê escolher a {{ $businessName }}">
-                Especialização dedicada a máquinas de costura, com a tranquilidade de um acompanhamento próximo do início ao fim.
-            </x-ui.section-heading>
-
-            <ul class="mt-8 space-y-5">
-                @php
-                $reasons = [
-                ['t' => 'Foco exclusivo em costura', 'd' => 'Conhecemos a fundo máquinas domésticas e industriais.'],
-                ['t' => 'Revisão antes da venda', 'd' => 'Cada equipamento é verificado para chegar pronto a trabalhar.'],
-                ['t' => 'Apoio que continua', 'd' => 'Suporte técnico contínuo depois da compra.'],
-                ['t' => 'Aconselhamento especializado', 'd' => 'Apoio profissional para encontrar a solução mais adequada.'],
-                ];
-                @endphp
-                @foreach($reasons as $reason)
-                <li class="flex gap-4">
-                    <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-900 text-brand-400">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
-                            <path d="M20 6L9 17l-5-5"></path>
-                        </svg>
-                    </span>
-                    <div>
-                        <h3 class="font-semibold text-stone-900">{{ $reason['t'] }}</h3>
-                        <p class="mt-1 text-sm leading-relaxed text-stone-600">{{ $reason['d'] }}</p>
-                    </div>
-                </li>
-                @endforeach
-            </ul>
-        </div>
-
-        <div data-reveal data-reveal-delay="2" class="relative">
-            <div class="relative overflow-hidden rounded-4xl bg-stone-900 p-10 text-white shadow-card">
-                <div class="pattern-dots-light pointer-events-none absolute inset-0 opacity-40"></div>
-                <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-500/15 blur-2xl"></div>
-                <div class="relative">
-                    <p class="mt-6 font-serif text-2xl font-medium leading-snug">
-                        “Conhecemos as máquinas, mas também entendemos as necessidades de quem trabalha com elas.”
-                    </p>
-                    <p class="mt-4 text-sm leading-relaxed text-stone-400">
-                        Soluções ajustadas à realidade de cada empresa, com proximidade e conhecimento técnico.
-                    </p>
-                    <div class="mt-8 h-px w-full stitch-line text-white/15"></div>
-                    <div class="mt-6">
-                        <x-ui.button :href="route('site.contact')" variant="light" size="md">Falar connosco</x-ui.button>
-                    </div>
+            <div class="lg:col-span-5 lg:pb-2">
+                <p class="max-w-md text-lg leading-relaxed text-slate-600">
+                    A {{ $businessName }} vende máquinas de costura e acessórios e ajuda a escolher a solução certa para o seu trabalho.
+                </p>
+                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <x-ui.button :href="route('site.catalog')" variant="navy" shape="rounded" size="lg">Ver catálogo</x-ui.button>
+                    <x-ui.button :href="route('site.contact')" variant="navy-outline" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
                 </div>
             </div>
         </div>
+
+        @if($heroCategories->isNotEmpty())
+            <div class="-mx-4 mt-14 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:overflow-visible sm:px-0 lg:mt-20 [&::-webkit-scrollbar]:hidden">
+                <ul class="flex snap-x snap-mandatory gap-4 sm:grid {{ $heroCategories->count() >= 3 ? 'sm:grid-cols-3' : ($heroCategories->count() === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1') }} sm:gap-6" aria-label="Categorias">
+                    @foreach($heroCategories as $category)
+                        @php $coverUrl = $category->cover?->main_image?->thumb_url; @endphp
+                        <li class="w-[78%] shrink-0 snap-start sm:w-auto">
+                            <a href="{{ route('site.catalog', ['category' => $category->id]) }}"
+                               class="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-4">
+                                <div class="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
+                                    @if($coverUrl)
+                                        <img src="{{ $coverUrl }}" alt="" width="600" height="450" decoding="async"
+                                             class="h-full w-full object-contain p-6 mix-blend-multiply transition duration-300 motion-safe:group-hover:scale-[1.03]">
+                                    @endif
+                                </div>
+                                <div class="mt-4 flex items-baseline justify-between gap-4">
+                                    <h2 class="text-lg font-semibold text-navy-950 underline-offset-4 group-hover:underline">{{ $category->name }}</h2>
+                                    <span class="shrink-0 text-sm text-slate-500">{{ $category->available_count }} {{ $category->available_count === 1 ? 'produto' : 'produtos' }}</span>
+                                </div>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            @if($categories->count() > $heroCategories->count())
+                <a href="{{ route('site.catalog') }}" class="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-navy-700 underline-offset-4 hover:underline">Ver todas as categorias</a>
+            @endif
+        @endif
     </div>
 </section>
 
+{{-- ======================= SERVICES ======================= --}}
+<section class="border-y border-slate-200 bg-slate-50" aria-labelledby="servicos">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:gap-0 lg:px-8 lg:py-16">
+        <h2 id="servicos" class="max-w-xs text-2xl font-semibold leading-tight tracking-tight text-navy-950 lg:pr-10">
+            Antes, durante e depois da compra.
+        </h2>
 
+        @foreach($services as $service)
+            <div class="border-t border-slate-200 pt-6 lg:border-l lg:border-t-0 lg:px-8 lg:pt-0">
+                <svg class="h-6 w-6 text-navy-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $service['icon'] !!}</svg>
+                <h3 class="mt-4 font-semibold text-navy-950">{{ $service['title'] }}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $service['text'] }}</p>
+            </div>
+        @endforeach
+    </div>
+</section>
+
+{{-- ======================= PRODUCTS ======================= --}}
+<section class="bg-white" aria-labelledby="produtos">
+    <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <h2 id="produtos" class="text-3xl font-semibold tracking-tight text-navy-950 sm:text-4xl">
+                    {{ $featuredMachines->isNotEmpty() ? 'Máquinas em destaque' : 'Do nosso catálogo' }}
+                </h2>
+                <p class="mt-3 max-w-xl leading-relaxed text-slate-600">
+                    {{ $featuredMachines->isNotEmpty() ? 'Uma seleção dos modelos disponíveis neste momento.' : 'Alguns dos produtos disponíveis em cada categoria.' }}
+                </p>
+            </div>
+            @if($products->isNotEmpty())
+                <a href="{{ route('site.catalog') }}" class="inline-flex min-h-11 items-center text-sm font-semibold text-navy-700 underline-offset-4 hover:underline">Ver o catálogo completo</a>
+            @endif
+        </div>
+
+        @if($products->isNotEmpty())
+            <ul class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                @foreach($products as $machine)
+                    <li><x-machine.card :machine="$machine" /></li>
+                @endforeach
+            </ul>
+        @else
+            <div class="mt-10 rounded-xl border border-dashed border-slate-300 px-6 py-14 text-center">
+                <p class="font-semibold text-navy-950">Ainda não há produtos publicados.</p>
+                <p class="mt-2 text-sm text-slate-600">Fale connosco e diga-nos o que procura.</p>
+                <x-ui.button :href="route('site.contact')" variant="navy" shape="rounded" size="md" class="mt-6">Pedir aconselhamento</x-ui.button>
+            </div>
+        @endif
+    </div>
+</section>
+
+{{-- ======================= ABOUT ======================= --}}
+<section class="bg-navy-900 text-white" aria-labelledby="sobre">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-24">
+        <h2 id="sobre" class="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:col-span-6">
+            Conhecemos as máquinas e quem trabalha com elas.
+        </h2>
+        <div class="lg:col-span-5 lg:col-start-8">
+            <p class="text-lg leading-relaxed text-navy-100">
+                Trabalhamos apenas com máquinas de costura e acessórios. É esse foco que nos permite aconselhar com conhecimento, rever cada máquina antes de sair e continuar disponíveis quando precisa de assistência.
+            </p>
+            <dl class="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-2">
+                <div>
+                    <dt class="font-semibold">Especialização</dt>
+                    <dd class="mt-2 text-sm leading-relaxed text-navy-100">Só máquinas de costura e acessórios: é o que conhecemos a fundo.</dd>
+                </div>
+                <div>
+                    <dt class="font-semibold">Conselho adequado</dt>
+                    <dd class="mt-2 text-sm leading-relaxed text-navy-100">Indicamos a solução certa para o seu trabalho, não a mais cara.</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</section>
+
+{{-- ======================= FINAL CTA ======================= --}}
+<section class="bg-white" aria-labelledby="contacto-cta">
+    <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-20 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div class="max-w-2xl">
+            <h2 id="contacto-cta" class="text-3xl font-semibold tracking-tight text-navy-950 sm:text-4xl">Não encontra o que procura?</h2>
+            <p class="mt-4 text-lg leading-relaxed text-slate-600">Diga-nos o que precisa e ajudamos a encontrar a máquina ou o acessório certo.</p>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row">
+            <x-ui.button :href="route('site.contact')" variant="navy" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
+            @if($whatsapp !== '')
+                <x-ui.button href="https://wa.me/{{ $whatsapp }}?text={{ rawurlencode('Olá! Gostaria de ajuda a encontrar uma máquina de costura.') }}"
+                             target="_blank" rel="noopener" variant="navy-outline" shape="rounded" size="lg">
+                    <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 2.2 12 9.8 9.8 0 0 1 12 2.2 9.8 9.8 0 0 1 21.8 12 9.8 9.8 0 0 1 12 21.8zM12 .2A11.8 11.8 0 0 0 1.8 17.9L.1 24l6.3-1.6A11.8 11.8 0 0 0 23.8 12 11.8 11.8 0 0 0 12 .2z"/></svg>
+                    WhatsApp
+                </x-ui.button>
+            @endif
+        </div>
+    </div>
+</section>
 @endsection

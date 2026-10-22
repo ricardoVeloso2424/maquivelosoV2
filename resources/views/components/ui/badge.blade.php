@@ -8,7 +8,7 @@
         'sold'       => 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200',
         'inactive'   => 'bg-stone-100 text-stone-500 ring-1 ring-inset ring-stone-200',
         'negotiable' => 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200',
-        'solid'      => 'bg-brand-600 text-white shadow-sm',
+        'solid'      => 'bg-brand-700 text-white shadow-sm',
     ];
 
     $classes = 'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ' . ($variants[$variant] ?? $variants['neutral']);

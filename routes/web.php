@@ -11,6 +11,7 @@ use App\Http\Controllers\Site\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MachineController;
 use App\Http\Controllers\Admin\MachineImageController;
+use App\Models\Category;
 use App\Models\Machine;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -22,25 +23,62 @@ use App\Http\Controllers\Admin\SettingsController;
 */
 Route::get('/', function () {
     $featuredMachines = collect();
+    $categories = collect();
+    $catalogPicks = collect();
 
     try {
         if (Schema::hasTable('machines')) {
+            $imageRelations = [
+                'firstImage:id,machine_id,path,thumb_path,sort_order',
+                'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
+            ];
+
             $featuredMachines = Machine::query()
-                ->with([
-                    'firstImage:id,machine_id,path,thumb_path,sort_order',
-                    'featuredImage:id,machine_id,path,thumb_path,sort_order,is_featured',
-                ])
+                ->with(array_merge($imageRelations, ['category:id,name']))
                 ->where('featured', true)
                 ->where('status', 'available')
                 ->latest()
                 ->limit(6)
                 ->get();
+
+            // Real categories with available products, each shown with one product photo.
+            $categories = Category::query()
+                ->withCount(['machines as available_count' => fn ($query) => $query->where('status', 'available')])
+                ->orderBy('name')
+                ->get()
+                ->filter(fn (Category $category) => $category->available_count > 0)
+                ->values();
+
+            $pickFromCategory = fn (Category $category, int $limit) => Machine::query()
+                ->with(array_merge($imageRelations, ['category:id,name']))
+                ->where('category_id', $category->id)
+                ->where('status', 'available')
+                ->has('images')
+                // Prefer products with higher-resolution photos (those large enough to get a thumbnail).
+                ->withExists(['images as has_large_photo' => fn ($query) => $query->whereNotNull('thumb_path')])
+                ->orderByDesc('has_large_photo')
+                ->latest()
+                ->limit($limit)
+                ->get();
+
+            $categories->each(fn (Category $category) => $category->setRelation('cover', $pickFromCategory($category, 1)->first()));
+
+            // Without featured machines, show a small cross-category selection instead of an empty block.
+            if ($featuredMachines->isEmpty()) {
+                // Alternate categories so the first row shows one product of each.
+                $perCategory = $categories->map(fn (Category $category) => $pickFromCategory($category, 2));
+                $catalogPicks = collect(range(0, 1))
+                    ->flatMap(fn (int $i) => $perCategory->map(fn ($machines) => $machines->get($i)))
+                    ->filter()
+                    ->take(6)
+                    ->values();
+            }
         }
     } catch (\Throwable) {
-        $featuredMachines = collect();
+        $featuredMachines = $categories = $catalogPicks = collect();
     }
 
-    return view('site.home', compact('featuredMachines'));
+    return view('site.home', compact('featuredMachines', 'categories', 'catalogPicks'));
 })->name('site.home');
 
 // Catálogo (lista)

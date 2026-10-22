@@ -3,10 +3,11 @@
     'variant' => 'primary',
     'size' => 'md',
     'type' => 'button',
+    'shape' => 'pill',
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-full transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed';
+    $base = 'inline-flex items-center justify-center gap-2 font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed';
 
     $sizes = [
         'sm' => 'px-4 py-2 text-sm',
@@ -23,9 +24,17 @@
         'ghost'   => 'text-stone-700 hover:text-brand-700 focus-visible:ring-brand-600',
         'danger'  => 'bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-600',
         'danger-outline' => 'border border-red-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 focus-visible:ring-red-500',
+        'navy'    => 'bg-navy-900 text-white hover:bg-navy-700 focus-visible:ring-navy-900',
+        'navy-outline' => 'border border-navy-200 bg-white text-navy-900 hover:border-navy-900 focus-visible:ring-navy-900',
+        'navy-on-dark' => 'bg-white text-navy-950 hover:bg-navy-50 focus-visible:ring-white focus-visible:ring-offset-navy-900',
     ];
 
-    $classes = $base . ' ' . ($sizes[$size] ?? $sizes['md']) . ' ' . ($variants[$variant] ?? $variants['primary']);
+    $shapes = [
+        'pill' => 'rounded-full',
+        'rounded' => 'rounded-lg',
+    ];
+
+    $classes = $base . ' ' . ($shapes[$shape] ?? $shapes['pill']) . ' ' . ($sizes[$size] ?? $sizes['md']) . ' ' . ($variants[$variant] ?? $variants['primary']);
 @endphp
 
 @if($href)
