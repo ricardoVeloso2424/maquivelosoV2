@@ -8,7 +8,6 @@
     $businessName = $siteSettings['business_name'] ?? 'MaquiVeloso';
 
     $products = $featuredMachines->isNotEmpty() ? $featuredMachines : $catalogPicks;
-    $heroCategories = $categories->take(3);
 
     $whatsapp = preg_replace('/\D+/', '', (string) ($siteSettings['contact_whatsapp'] ?? ''));
     $whatsapp = is_string($whatsapp) ? $whatsapp : '';
@@ -50,35 +49,6 @@
                 </div>
             </div>
         </div>
-
-        @if($heroCategories->isNotEmpty())
-            <div class="-mx-4 mt-14 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:overflow-visible sm:px-0 lg:mt-20 [&::-webkit-scrollbar]:hidden">
-                <ul class="flex snap-x snap-mandatory gap-4 sm:grid {{ $heroCategories->count() >= 3 ? 'sm:grid-cols-3' : ($heroCategories->count() === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1') }} sm:gap-6" aria-label="Categorias">
-                    @foreach($heroCategories as $category)
-                        @php $coverUrl = $category->cover?->main_image?->thumb_url; @endphp
-                        <li class="w-[78%] shrink-0 snap-start sm:w-auto">
-                            <a href="{{ route('site.catalog', ['category' => $category->id]) }}"
-                               class="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-4">
-                                <div class="aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
-                                    @if($coverUrl)
-                                        <img src="{{ $coverUrl }}" alt="" width="600" height="450" decoding="async"
-                                             class="h-full w-full object-contain p-6 mix-blend-multiply transition duration-300 motion-safe:group-hover:scale-[1.03]">
-                                    @endif
-                                </div>
-                                <div class="mt-4 flex items-baseline justify-between gap-4">
-                                    <h2 class="text-lg font-semibold text-navy-950 underline-offset-4 group-hover:underline">{{ $category->name }}</h2>
-                                    <span class="shrink-0 text-sm text-slate-500">{{ $category->available_count }} {{ $category->available_count === 1 ? 'produto' : 'produtos' }}</span>
-                                </div>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-
-            @if($categories->count() > $heroCategories->count())
-                <a href="{{ route('site.catalog') }}" class="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-navy-700 underline-offset-4 hover:underline">Ver todas as categorias</a>
-            @endif
-        @endif
     </div>
 </section>
 

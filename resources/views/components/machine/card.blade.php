@@ -4,7 +4,6 @@
     $name = $machine->name ?? '—';
     $imgUrl = $machine->main_image?->thumb_url;
     $isPriceNegotiable = $machine->priceState() === 'price_negotiable';
-    $categoryName = $machine->category->name ?? null;
 @endphp
 
 <a
@@ -38,11 +37,7 @@
     </div>
 
     <div class="flex flex-1 flex-col border-t border-slate-100 p-5">
-        @if($categoryName)
-            <p class="text-xs font-medium text-slate-500">{{ $categoryName }}</p>
-        @endif
-
-        <h3 class="mt-1 line-clamp-2 text-base font-semibold leading-snug text-navy-950">
+        <h3 class="line-clamp-2 text-base font-semibold leading-snug text-navy-950">
             {{ $name }}
         </h3>
 
