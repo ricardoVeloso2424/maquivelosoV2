@@ -27,10 +27,10 @@
     </div>
 @else
     @if($state === 'on_request')
-        <p class="text-sm font-semibold text-slate-600">Sob consulta</p>
+        <p class="text-sm text-slate-500">Sob consulta</p>
     @elseif($state === 'negotiable')
-        <p class="text-sm font-semibold text-navy-800">Preço negociável</p>
+        <p class="text-sm text-slate-500">Preço negociável</p>
     @else
-        <p class="text-xl font-semibold tracking-tight text-navy-950">{{ $price }}</p>
+        <p class="text-base font-semibold tracking-tight text-navy-900">{{ $price }}</p>
     @endif
 @endif

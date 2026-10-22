@@ -135,7 +135,7 @@
 <section class="bg-white" aria-label="Resultados">
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         @if($resultCount > 0 || ($machines ?? collect())->count() > 0)
-            <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-7 lg:gap-y-8">
                 @foreach($machines as $machine)
                     <li><x-machine.card :machine="$machine" /></li>
                 @endforeach

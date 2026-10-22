@@ -32,37 +32,39 @@
         Saltar para o conteúdo
     </a>
 
-    <header x-data="{ open: false }" @keydown.escape.window="open = false" class="sticky top-0 z-50 bg-navy-900 text-white">
-        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('site.home') }}" class="inline-flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white">
-                    <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="" class="h-10 w-10 rounded-full object-contain">
+    <header x-data="{ open: false }" @keydown.escape.window="open = false" class="sticky top-0 z-50 border-b border-white/[0.08] bg-navy-900 text-white">
+        <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
+            <a href="{{ route('site.home') }}" class="inline-flex shrink-0 items-center gap-3.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white">
+                    <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="" class="h-11 w-11 rounded-full object-contain">
                 </span>
-                <span class="text-lg font-semibold tracking-tight">{{ $businessName }}</span>
+                <span class="text-[1.1875rem] font-semibold tracking-[-0.01em]">{{ $businessName }}</span>
             </a>
 
-            <nav class="hidden h-full items-center gap-1 md:flex" aria-label="Navegação principal">
-                @foreach($navItems as $item)
-                    <a href="{{ route($item['route']) }}"
-                       @if($item['active']) aria-current="page" @endif
-                       class="relative flex h-full items-center px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white {{ $item['active'] ? 'text-white after:absolute after:inset-x-4 after:bottom-0 after:h-0.5 after:bg-white' : 'text-navy-100 hover:text-white' }}">
-                        {{ $item['label'] }}
-                    </a>
-                @endforeach
-            </nav>
+            <div class="hidden h-full items-center gap-8 md:flex">
+                <nav class="flex h-full items-center gap-7" aria-label="Navegação principal">
+                    @foreach($navItems as $item)
+                        <a href="{{ route($item['route']) }}"
+                           @if($item['active']) aria-current="page" @endif
+                           class="relative flex h-full items-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/70 {{ $item['active'] ? 'text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-white' : 'text-white/70 hover:text-white' }}">
+                            {{ $item['label'] }}
+                        </a>
+                    @endforeach
+                </nav>
 
-            <div class="hidden items-center gap-5 md:flex">
-                @if($phone !== '' && $phoneHref !== '')
-                    <a href="tel:{{ $phoneHref }}" class="hidden text-sm font-medium text-navy-100 transition hover:text-white lg:inline">{{ $phone }}</a>
-                @endif
-                <x-ui.button :href="route('site.contact')" variant="navy-on-dark" shape="rounded" size="sm">
-                    Pedir informação
-                </x-ui.button>
+                <span class="h-5 w-px bg-white/15" aria-hidden="true"></span>
+
+                <div class="flex items-center gap-5">
+                    @if($phone !== '' && $phoneHref !== '')
+                        <a href="tel:{{ $phoneHref }}" class="hidden rounded text-[0.8125rem] tabular-nums text-white/55 transition-colors hover:text-white/90 lg:inline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900">{{ $phone }}</a>
+                    @endif
+                    <a href="{{ route('site.contact') }}" class="inline-flex items-center justify-center rounded-md bg-white text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900 h-9 px-4">Pedir informação</a>
+                </div>
             </div>
 
             <button
                 type="button"
-                class="inline-flex h-11 w-11 items-center justify-center rounded-lg text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white md:hidden"
+                class="inline-flex h-11 w-11 items-center justify-center rounded-md text-white transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 md:hidden"
                 @click="open = !open"
                 :aria-expanded="open.toString()"
                 aria-controls="mobile-menu"
@@ -73,19 +75,19 @@
             </button>
         </div>
 
-        <div id="mobile-menu" x-show="open" x-cloak x-transition.opacity class="border-t border-white/10 bg-navy-900 md:hidden">
-            <nav class="mx-auto flex max-w-7xl flex-col px-4 pb-5 pt-2" aria-label="Navegação mobile">
+        <div id="mobile-menu" x-show="open" x-cloak x-transition.opacity class="border-t border-white/[0.08] bg-navy-900 md:hidden">
+            <nav class="mx-auto flex max-w-7xl flex-col px-4 pb-5 pt-2 sm:px-6" aria-label="Navegação mobile">
                 @foreach($navItems as $item)
                     <a href="{{ route($item['route']) }}" @click="open = false"
                        @if($item['active']) aria-current="page" @endif
-                       class="flex min-h-12 items-center border-b border-white/10 text-base font-medium {{ $item['active'] ? 'text-white' : 'text-navy-100' }}">
+                       class="flex min-h-12 items-center border-b border-white/[0.08] text-base font-medium transition-colors {{ $item['active'] ? 'text-white' : 'text-white/70 hover:text-white' }}">
                         {{ $item['label'] }}
                     </a>
                 @endforeach
                 @if($phone !== '' && $phoneHref !== '')
-                    <a href="tel:{{ $phoneHref }}" class="flex min-h-12 items-center border-b border-white/10 text-base font-medium text-navy-100">Ligar {{ $phone }}</a>
+                    <a href="tel:{{ $phoneHref }}" class="flex min-h-12 items-center border-b border-white/[0.08] text-sm tabular-nums text-white/55 transition-colors hover:text-white/90">Ligar {{ $phone }}</a>
                 @endif
-                <x-ui.button :href="route('site.contact')" variant="navy-on-dark" shape="rounded" size="lg" class="mt-5 w-full">Pedir informação</x-ui.button>
+                <a href="{{ route('site.contact') }}" class="inline-flex items-center justify-center rounded-md bg-white text-sm font-semibold text-navy-950 transition-colors hover:bg-navy-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900 mt-5 h-12 w-full px-5">Pedir informação</a>
             </nav>
         </div>
     </header>
@@ -94,53 +96,62 @@
         @yield('content')
     </main>
 
-    <footer class="{{ request()->routeIs('site.home') ? '' : 'mt-24' }} bg-navy-950 text-navy-100">
-        <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-12 lg:px-8">
-            <div class="md:col-span-5">
-                <div class="flex items-center gap-3">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white">
-                        <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="" class="h-10 w-10 rounded-full object-contain">
+    <footer class="{{ request()->routeIs('site.home') ? '' : 'mt-24' }} bg-navy-950 text-white">
+        <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:px-8 lg:py-12">
+            <div class="flex items-center gap-4 sm:gap-5">
+                <a href="{{ route('site.home') }}" class="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950" aria-label="{{ $businessName }}">
+                    <span class="flex h-16 w-16 items-center justify-center rounded-full bg-white">
+                        <img src="{{ asset('images/branding/maquivelosoLogo.png') }}" alt="" class="h-[3.75rem] w-[3.75rem] rounded-full object-contain">
                     </span>
-                    <span class="text-lg font-semibold text-white">{{ $businessName }}</span>
+                </a>
+                <div>
+                    <p class="text-xl font-semibold tracking-tight">{{ $businessName }}</p>
+                    <p class="mt-1 max-w-md text-sm leading-relaxed text-white/60">
+                        Venda de máquinas de costura e acessórios, com aconselhamento antes da compra e assistência técnica depois.
+                    </p>
                 </div>
-                <p class="mt-4 max-w-sm text-sm leading-relaxed">
-                    Venda de máquinas de costura e acessórios, com aconselhamento antes da compra e assistência técnica depois.
-                </p>
             </div>
 
-            <nav class="md:col-span-3" aria-label="Rodapé">
-                <h2 class="text-sm font-semibold text-white">Site</h2>
-                <ul class="mt-4 space-y-1 text-sm">
-                    @foreach($navItems as $item)
-                        <li><a href="{{ route($item['route']) }}" class="inline-flex min-h-8 items-center transition hover:text-white">{{ $item['label'] }}</a></li>
-                    @endforeach
-                </ul>
-            </nav>
+            <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8 lg:shrink-0">
+                <nav aria-label="Rodapé">
+                    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        @foreach($navItems as $item)
+                            <li>
+                                <a href="{{ route($item['route']) }}"
+                                   @if($item['active']) aria-current="page" @endif
+                                   class="inline-flex min-h-9 items-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950 {{ $item['active'] ? 'text-white' : 'text-white/65 hover:text-white' }}">{{ $item['label'] }}</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </nav>
 
-            <div class="md:col-span-4">
-                <h2 class="text-sm font-semibold text-white">Contacto</h2>
-                <ul class="mt-4 space-y-1 text-sm">
-                    @if($phone !== '' && $phoneHref !== '')
-                        <li><a href="tel:{{ $phoneHref }}" class="inline-flex min-h-8 items-center transition hover:text-white">{{ $phone }}</a></li>
-                    @endif
-                    @if($email !== '')
-                        <li><a href="mailto:{{ $email }}" class="inline-flex min-h-8 items-center break-all transition hover:text-white">{{ $email }}</a></li>
-                    @endif
-                    @if($location !== '')
-                        <li class="whitespace-pre-line py-1.5">{{ $location }}</li>
-                    @endif
-                    @if($hours !== '')
-                        <li class="whitespace-pre-line py-1.5">{{ $hours }}</li>
-                    @endif
-                    @if($phone === '' && $email === '' && $location === '' && $hours === '')
-                        <li><a href="{{ route('site.contact') }}" class="inline-flex min-h-8 items-center transition hover:text-white">Página de contacto</a></li>
-                    @endif
-                </ul>
+                <span class="hidden h-5 w-px bg-white/15 sm:block" aria-hidden="true"></span>
+
+                <a href="{{ route('site.contact') }}" class="group inline-flex items-center gap-2 self-start border-b border-white/30 pb-1 text-sm font-semibold transition-colors hover:border-white sm:self-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950">
+                    Fale connosco
+                    <svg class="h-4 w-4 transition-transform motion-safe:group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+                </a>
             </div>
         </div>
 
-        <div class="border-t border-white/10">
-            <p class="mx-auto max-w-7xl px-4 py-5 text-xs text-navy-300 sm:px-6 lg:px-8">© {{ date('Y') }} {{ $businessName }}</p>
+        <div class="border-t border-white/[0.07]">
+            <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6 lg:px-8">
+                <p>© {{ date('Y') }} {{ $businessName }}</p>
+
+                @if(($phone !== '' && $phoneHref !== '') || $email !== '' || $location !== '')
+                    <ul class="flex flex-wrap gap-x-6 gap-y-1">
+                        @if($phone !== '' && $phoneHref !== '')
+                            <li><a href="tel:{{ $phoneHref }}" class="rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950">{{ $phone }}</a></li>
+                        @endif
+                        @if($email !== '')
+                            <li><a href="mailto:{{ $email }}" class="break-all rounded transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950">{{ $email }}</a></li>
+                        @endif
+                        @if($location !== '')
+                            <li>{{ preg_replace('/\s*\R\s*/', ', ', $location) }}</li>
+                        @endif
+                    </ul>
+                @endif
+            </div>
         </div>
     </footer>
 </body>

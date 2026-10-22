@@ -46,12 +46,14 @@
             </h1>
 
             <div class="lg:col-span-5 lg:pb-2">
-                <p class="max-w-md text-lg leading-relaxed text-navy-100">
-                    A {{ $businessName }} vende máquinas de costura e acessórios e ajuda a escolher a solução certa para o seu trabalho.
-                </p>
+                <div class="relative max-w-md">
+                    <div class="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 rounded-[3rem] bg-navy-950/60 blur-xl" aria-hidden="true"></div>
+                    <p class="text-lg leading-relaxed text-white [text-shadow:0_1px_10px_rgba(10,22,40,0.55)]">
+                        A {{ $businessName }} vende máquinas de costura e acessórios e ajuda a escolher a solução certa para o seu trabalho.
+                    </p>
+                </div>
                 <div class="mt-8 flex flex-col gap-3 sm:flex-row">
                     <x-ui.button :href="route('site.catalog')" variant="navy-on-dark" shape="rounded" size="lg">Ver catálogo</x-ui.button>
-                    <x-ui.button :href="route('site.contact')" variant="on-dark" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
                 </div>
             </div>
         </div>
@@ -59,10 +61,10 @@
 </section>
 
 {{-- ======================= SERVICES ======================= --}}
-<section class="border-y border-slate-200 bg-slate-50" aria-label="Serviços">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:gap-0 lg:px-8 lg:py-16">
+<section class="bg-[#d6e0ea]" aria-label="Serviços">
+    <div class="mx-auto grid max-w-7xl gap-5 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:gap-6 lg:px-8 lg:py-16">
         @foreach($services as $service)
-            <div class="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0 lg:border-l lg:border-t-0 lg:px-8 lg:pt-0 lg:first:border-l-0 lg:first:pl-0">
+            <div class="rounded-xl border border-navy-200 bg-white p-6">
                 <svg class="h-6 w-6 text-navy-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $service['icon'] !!}</svg>
                 <h3 class="mt-4 font-semibold text-navy-950">{{ $service['title'] }}</h3>
                 <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $service['text'] }}</p>
@@ -72,28 +74,28 @@
 </section>
 
 {{-- ======================= PRODUCTS ======================= --}}
-<section class="bg-white" aria-labelledby="produtos">
-    <div class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-                <h2 id="produtos" class="text-3xl font-semibold tracking-tight text-navy-950 sm:text-4xl">
-                    {{ $featuredMachines->isNotEmpty() ? 'Máquinas em destaque' : 'Do nosso catálogo' }}
-                </h2>
-                <p class="mt-3 max-w-xl leading-relaxed text-slate-600">
-                    {{ $featuredMachines->isNotEmpty() ? 'Uma seleção dos modelos disponíveis neste momento.' : 'Alguns dos produtos disponíveis em cada categoria.' }}
-                </p>
-            </div>
+<section class="bg-[#e3e7ec]" aria-labelledby="produtos">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+            <h2 id="produtos" class="text-3xl font-semibold tracking-tight text-navy-950 sm:text-4xl">
+                {{ $featuredMachines->isNotEmpty() ? 'Máquinas em destaque' : 'Do nosso catálogo' }}
+            </h2>
             @if($products->isNotEmpty())
-                <a href="{{ route('site.catalog') }}" class="inline-flex min-h-11 items-center text-sm font-semibold text-navy-700 underline-offset-4 hover:underline">Ver o catálogo completo</a>
+                <a href="{{ route('site.catalog') }}" class="group hidden items-center gap-1.5 text-sm font-medium text-slate-500 underline-offset-4 transition-colors hover:text-navy-900 hover:underline sm:inline-flex">
+                    Ver o catálogo completo
+                    <svg class="h-3.5 w-3.5 transition-transform motion-safe:group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+                </a>
             @endif
         </div>
 
         @if($products->isNotEmpty())
-            <ul class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <ul class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-x-7 lg:gap-y-8">
                 @foreach($products as $machine)
                     <li><x-machine.card :machine="$machine" /></li>
                 @endforeach
             </ul>
+
+            <x-ui.button :href="route('site.catalog')" variant="navy-outline" shape="rounded" size="md" class="mt-8 w-full sm:hidden">Ver o catálogo completo</x-ui.button>
         @else
             <div class="mt-10 rounded-xl border border-dashed border-slate-300 px-6 py-14 text-center">
                 <p class="font-semibold text-navy-950">Ainda não há produtos publicados.</p>
@@ -131,20 +133,22 @@
 
 {{-- ======================= FINAL CTA ======================= --}}
 <section class="bg-white" aria-labelledby="contacto-cta">
-    <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-20 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div class="max-w-2xl">
-            <h2 id="contacto-cta" class="text-3xl font-semibold tracking-tight text-navy-950 sm:text-4xl">Não encontra o que procura?</h2>
-            <p class="mt-4 text-lg leading-relaxed text-slate-600">Diga-nos o que precisa e ajudamos a encontrar a máquina ou o acessório certo.</p>
-        </div>
-        <div class="flex flex-col gap-3 sm:flex-row">
-            <x-ui.button :href="route('site.contact')" variant="navy" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
-            @if($whatsapp !== '')
-                <x-ui.button href="https://wa.me/{{ $whatsapp }}?text={{ rawurlencode('Olá! Gostaria de ajuda a encontrar uma máquina de costura.') }}"
-                             target="_blank" rel="noopener" variant="navy-outline" shape="rounded" size="lg">
-                    <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 2.2 12 9.8 9.8 0 0 1 12 2.2 9.8 9.8 0 0 1 21.8 12 9.8 9.8 0 0 1 12 21.8zM12 .2A11.8 11.8 0 0 0 1.8 17.9L.1 24l6.3-1.6A11.8 11.8 0 0 0 23.8 12 11.8 11.8 0 0 0 12 .2z"/></svg>
-                    WhatsApp
-                </x-ui.button>
-            @endif
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+            <div class="max-w-2xl">
+                <h2 id="contacto-cta" class="text-2xl font-semibold tracking-tight text-navy-950 sm:text-3xl">Não encontra o que procura?</h2>
+                <p class="mt-2 leading-relaxed text-slate-600 sm:text-lg">Diga-nos o que precisa e ajudamos a encontrar a máquina ou o acessório certo.</p>
+            </div>
+            <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+                <x-ui.button :href="route('site.contact')" variant="navy" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
+                @if($whatsapp !== '')
+                    <x-ui.button href="https://wa.me/{{ $whatsapp }}?text={{ rawurlencode('Olá! Gostaria de ajuda a encontrar uma máquina de costura.') }}"
+                                 target="_blank" rel="noopener" variant="navy-outline" shape="rounded" size="lg">
+                        <svg class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A9.8 9.8 0 0 1 2.2 12 9.8 9.8 0 0 1 12 2.2 9.8 9.8 0 0 1 21.8 12 9.8 9.8 0 0 1 12 21.8zM12 .2A11.8 11.8 0 0 0 1.8 17.9L.1 24l6.3-1.6A11.8 11.8 0 0 0 23.8 12 11.8 11.8 0 0 0 12 .2z"/></svg>
+                        WhatsApp
+                    </x-ui.button>
+                @endif
+            </div>
         </div>
     </div>
 </section>

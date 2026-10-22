@@ -8,9 +8,9 @@
 
 <a
     href="{{ route('site.machine.show', $machine) }}"
-    {{ $attributes->merge(['class' => 'group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:border-navy-300 hover:shadow-[0_10px_30px_-18px_rgba(16,32,58,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-2']) }}
+    {{ $attributes->merge(['class' => 'group flex h-full flex-col overflow-hidden rounded-lg border border-slate-300/80 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-slate-400/80 hover:shadow-[0_8px_24px_-16px_rgba(16,32,58,0.25)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-2']) }}
 >
-    <div class="relative aspect-[4/3] overflow-hidden bg-slate-50">
+    <div class="relative aspect-[4/3] overflow-hidden bg-[#eef1f4]">
         @if($imgUrl)
             <img
                 src="{{ $imgUrl }}"
@@ -19,7 +19,7 @@
                 height="450"
                 loading="lazy"
                 decoding="async"
-                class="h-full w-full object-contain p-5 mix-blend-multiply transition duration-300 motion-safe:group-hover:scale-[1.03]"
+                class="h-full w-full object-contain p-4 mix-blend-multiply transition duration-300 sm:p-5 motion-safe:group-hover:scale-[1.02]"
             >
         @else
             <div class="flex h-full w-full items-center justify-center text-slate-300">
@@ -32,19 +32,22 @@
         @endif
 
         @if($isPriceNegotiable)
-            <span class="absolute left-3 top-3 rounded-md bg-white px-2 py-1 text-xs font-semibold text-navy-800 ring-1 ring-inset ring-navy-100">Negociável</span>
+            <span class="absolute left-3 top-3 rounded bg-white px-2 py-0.5 text-xs font-medium text-navy-800 ring-1 ring-inset ring-slate-200">Negociável</span>
         @endif
     </div>
 
-    <div class="flex flex-1 flex-col border-t border-slate-100 p-5">
-        <h3 class="line-clamp-2 text-base font-semibold leading-snug text-navy-950">
+    <div class="flex flex-1 flex-col px-5 pb-4 pt-4">
+        <h3 class="mb-4 line-clamp-3 text-[0.9375rem] font-semibold leading-snug text-navy-950">
             {{ $name }}
         </h3>
 
-        <div class="mt-auto flex items-end justify-between gap-3 pt-4">
+        <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3.5">
             <x-machine.price :machine="$machine" variant="card" />
 
-            <span class="shrink-0 text-sm font-semibold text-navy-700 underline-offset-4 group-hover:underline">Ver detalhes</span>
+            <span class="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-navy-700 underline-offset-4 group-hover:text-navy-900 group-hover:underline">
+                Ver detalhes
+                <svg class="h-3.5 w-3.5 transition-transform motion-safe:group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+            </span>
         </div>
     </div>
 </a>
