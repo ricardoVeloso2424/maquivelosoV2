@@ -32,20 +32,26 @@
 @endphp
 
 {{-- ============================ HERO ============================ --}}
-<section class="bg-white" aria-labelledby="hero-title">
+<section class="relative isolate overflow-hidden bg-navy-950" aria-labelledby="hero-title">
+    <img src="{{ asset('images/banners/home-banner.jpg') }}"
+         alt=""
+         width="2062" height="763" fetchpriority="high" decoding="async"
+         class="absolute inset-0 -z-10 h-full w-full object-cover">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950/90 via-navy-950/70 to-navy-950/40" aria-hidden="true"></div>
+
     <div class="mx-auto max-w-7xl px-4 pb-14 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-20 lg:pt-24">
         <div class="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
-            <h1 id="hero-title" class="text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.03em] text-navy-950 sm:text-6xl lg:col-span-7 lg:text-[4.25rem]">
+            <h1 id="hero-title" class="text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.03em] text-white sm:text-6xl lg:col-span-7 lg:text-[4.25rem]">
                 Máquinas de costura revistas e com assistência.
             </h1>
 
             <div class="lg:col-span-5 lg:pb-2">
-                <p class="max-w-md text-lg leading-relaxed text-slate-600">
+                <p class="max-w-md text-lg leading-relaxed text-navy-100">
                     A {{ $businessName }} vende máquinas de costura e acessórios e ajuda a escolher a solução certa para o seu trabalho.
                 </p>
                 <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <x-ui.button :href="route('site.catalog')" variant="navy" shape="rounded" size="lg">Ver catálogo</x-ui.button>
-                    <x-ui.button :href="route('site.contact')" variant="navy-outline" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
+                    <x-ui.button :href="route('site.catalog')" variant="navy-on-dark" shape="rounded" size="lg">Ver catálogo</x-ui.button>
+                    <x-ui.button :href="route('site.contact')" variant="on-dark" shape="rounded" size="lg">Pedir aconselhamento</x-ui.button>
                 </div>
             </div>
         </div>
@@ -53,14 +59,10 @@
 </section>
 
 {{-- ======================= SERVICES ======================= --}}
-<section class="border-y border-slate-200 bg-slate-50" aria-labelledby="servicos">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:gap-0 lg:px-8 lg:py-16">
-        <h2 id="servicos" class="max-w-xs text-2xl font-semibold leading-tight tracking-tight text-navy-950 lg:pr-10">
-            Antes, durante e depois da compra.
-        </h2>
-
+<section class="border-y border-slate-200 bg-slate-50" aria-label="Serviços">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:gap-0 lg:px-8 lg:py-16">
         @foreach($services as $service)
-            <div class="border-t border-slate-200 pt-6 lg:border-l lg:border-t-0 lg:px-8 lg:pt-0">
+            <div class="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0 lg:border-l lg:border-t-0 lg:px-8 lg:pt-0 lg:first:border-l-0 lg:first:pl-0">
                 <svg class="h-6 w-6 text-navy-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $service['icon'] !!}</svg>
                 <h3 class="mt-4 font-semibold text-navy-950">{{ $service['title'] }}</h3>
                 <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $service['text'] }}</p>
@@ -104,25 +106,26 @@
 
 {{-- ======================= ABOUT ======================= --}}
 <section class="bg-navy-900 text-white" aria-labelledby="sobre">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-24">
-        <h2 id="sobre" class="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:col-span-6">
-            Conhecemos as máquinas e quem trabalha com elas.
-        </h2>
-        <div class="lg:col-span-5 lg:col-start-8">
-            <p class="text-lg leading-relaxed text-navy-100">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="grid gap-5 lg:grid-cols-2 lg:items-start lg:gap-10">
+            <h2 id="sobre" class="max-w-md text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                Conhecemos as máquinas e quem trabalha com elas.
+            </h2>
+            <p class="max-w-xl leading-relaxed text-navy-100 sm:text-lg">
                 Trabalhamos apenas com máquinas de costura e acessórios. É esse foco que nos permite aconselhar com conhecimento, rever cada máquina antes de sair e continuar disponíveis quando precisa de assistência.
             </p>
-            <dl class="mt-10 grid gap-8 border-t border-white/15 pt-8 sm:grid-cols-2">
-                <div>
-                    <dt class="font-semibold">Especialização</dt>
-                    <dd class="mt-2 text-sm leading-relaxed text-navy-100">Só máquinas de costura e acessórios: é o que conhecemos a fundo.</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold">Conselho adequado</dt>
-                    <dd class="mt-2 text-sm leading-relaxed text-navy-100">Indicamos a solução certa para o seu trabalho, não a mais cara.</dd>
-                </div>
-            </dl>
         </div>
+
+        <dl class="mt-10 grid gap-4 sm:grid-cols-2 lg:gap-10">
+            <div class="rounded-lg border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+                <dt class="font-semibold">Especialização</dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-navy-100 sm:text-base">Só máquinas de costura e acessórios: é o que conhecemos a fundo.</dd>
+            </div>
+            <div class="rounded-lg border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+                <dt class="font-semibold">Conselho adequado</dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-navy-100 sm:text-base">Indicamos a solução certa para o seu trabalho, não a mais cara.</dd>
+            </div>
+        </dl>
     </div>
 </section>
 
